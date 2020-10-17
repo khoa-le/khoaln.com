@@ -30,7 +30,7 @@ node_modules
 .cache/
 .DS_Store
 .idea
-public
+
 
 cypress/videos
 cypress/screenshots
