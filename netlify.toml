@@ -3,13 +3,11 @@
   [headers.values]
     Access-Control-Allow-Origin = "*"
 
-[build]
-  publish = "public"
-
 [[plugins]]
   package = "netlify-plugin-gatsby-cache"
 
 [build]
+  publish = "public"
   command = "npm run netlify"
   functions = "public/functions/"
 
