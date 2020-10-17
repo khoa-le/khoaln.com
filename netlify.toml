@@ -4,6 +4,6 @@
     Access-Control-Allow-Origin = "*"
 
 [build]
-  publish = "public"
+  publish = "public/"
   command = "npm run netlify"
   functions = "public/functions/"
