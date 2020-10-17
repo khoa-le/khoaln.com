@@ -11,7 +11,6 @@ const {zipFunctions} = require('@netlify/zip-it-and-ship-it')
 const config = require('./config/website')
 const blogUtils = require('./other/blog-utils')
 
-const twoDigits = n => (n.toString().length < 2 ? `0${n}` : n)
 
 function stripMarkdown(markdownString) {
   return remark()
@@ -147,7 +146,7 @@ function onCreateMdxNode({node, getNode, actions}) {
   const {createNodeField} = actions
   let slug =
     node.frontmatter.slug || createFilePath({node, getNode, basePath: `pages`})
-  let {isWriting, isWorkshop, isScheduled, isPodcast} = false
+  let {isWriting} = false
 
   if (node.fileAbsolutePath.includes('content/blog/')) {
     slug = `/blog/${node.frontmatter.slug || slugify(parentNode.name)}`
@@ -275,23 +274,6 @@ function onCreateMdxNode({node, getNode, actions}) {
     value: isWriting,
   })
 
-  createNodeField({
-    name: 'isWorkshop',
-    node,
-    value: isWorkshop,
-  })
-
-  createNodeField({
-    name: 'isScheduled',
-    node,
-    value: isScheduled,
-  })
-
-  createNodeField({
-    name: 'isPodcast',
-    node,
-    value: isPodcast,
-  })
 }
 
 const onPreBootstrap = () => {

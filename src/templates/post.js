@@ -30,7 +30,6 @@ export default function PostPage({data: {site, mdx}}) {
     banner,
     bannerCredit,
     noFooter,
-    keywords,
   } = mdx.fields
 
   const blogPostUrl = `${config.siteUrl}${slug}`
