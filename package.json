@@ -116,7 +116,7 @@
   "license": "MIT",
   "main": "n/a",
   "scripts": {
-    "build": "gatsby build",
+    "build": "GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES=true gatsby build",
     "dev": "npm-run-all --parallel dev:*",
     "dev:gatsby": "gatsby develop",
     "dev:functions": "dotenv -e ./netlify/.env netlify-lambda serve netlify/functions",
