@@ -3,7 +3,7 @@ import kent from '../images/kent.png'
 
 function BlogFooter() {
   return (
-    <div style={{display: 'flex'}}>
+    <div style={{display: 'none'/*flex*/}}>
       <div
         style={{
           paddingRight: 20,
