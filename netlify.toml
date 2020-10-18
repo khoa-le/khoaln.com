@@ -5,5 +5,5 @@
 
 
 [build]
-  command = "npm run netlify"
+  command = "npm run build"
   functions = "public/functions/"
