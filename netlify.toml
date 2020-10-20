@@ -7,5 +7,5 @@
   package = "netlify-plugin-gatsby-cache"
 
 [build]
-  command = "GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES=true npm run build"
+  command = "GATSBY_EXPERIMENTAL_PAGE_BUILD_ON_DATA_CHANGES=true npm run netlify"
   functions = "public/functions/"
