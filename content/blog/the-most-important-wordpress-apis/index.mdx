@@ -1,0 +1,64 @@
+---
+slug: 'the-most-important-wordpress-apis'
+title: 'The Most Important WordPress APIs'
+date: '2020-10-24'
+author: 'Khoa Le'
+description:
+  '_The Most Important WordPress APIs_'
+categories:
+  - 'wordpress'
+keywords:
+  - 'wordpress'
+banner: './images/banner.jpg'
+bannerCredit:
+  'Photo by [Luca Bravo](https://unsplash.com/photos/XJXWbfSo2f0)'
+---
+
+WordPress features many different APIs that help interact with WordPress.
+Think of the APIs as gateways that let you add functionality or retrieve external content within WordPress without violating the
+“don’t hack the core” maxim: Most APIs insert references to non‐core code that will be added to the wp‐content directory by registering its entry points with WordPress.
+Each API is documented in the Codex along with functions used in the API.
+An API is a set of predefined functions available for use in themes and plugins. The following is a list of the most common WordPress APIs:
+
+## Plugin API
+
+Used for custom plugin development. The Codex features an extensive Plugin API documentation page.
+ There is an introduction to hooks, actions, and filters, the primary ways to interact with WordPress from a custom‐built plugin.
+ The Plugin API page links to the Function Reference pages for available API functions are located in `/wp‐includes/` plugins.php at http://codex.wordpress.org/Plugin_API.
+
+## Widgets API
+
+Used to create and maintain widgets in your plugin. The widget will automati- cally appear under the
+Appearance ➢ Widgets screen and can be used on any defined sidebar on your theme.
+ The widgets API is located at http://codex.wordpress.org/Widgets_API.
+
+## Shortcode API
+
+Used for adding shortcodes in your plugin. A shortcode is a macro code added to a post. This allows a plugin to grab that shortcode and execute specific commands and display elements in place of it in your post. Shortcodes can also accept parameters to alter the output.
+
+## HTTP API
+
+Used for sending an HTTP request from WordPress. This API is a standardized method to grab the content of an external URL. Basically, it takes the provided URL and tests a series of PHP methods for sending the request. Depending on the hosting environ- ment, WordPress uses the first method it deems to be configured correctly to make the HTTP request.
+
+The current HTTP API PHP methods tested are cURL, Streams, and FSockopen. The methods are also checked exactly in that order. You can use the Core Control plugin (http://wordpress.org/extend/plugins/Core‐control/) to specifically choose which method is used for all HTTP requests.
+
+Using the HTTP API, you could easily interact with the Google Maps API to dynamically generate maps and plots. The HTTP API can also easily interact with the Twitter API, allowing you to post/read tweets directly from WordPress. The HTTP API is found at http://codex.wordpress.org/HTTP_API.
+
+## Settings API
+
+Used for creating a settings page. This API is used for creating and managing custom options for your plugins and themes. The main advantage of using the Settings API is security. The API sanitizes all of the setting data saved by the user. This means no more worrying about nonces, data validation, and cross‐site scripting (XSS) attacks when saving setting data. This is much easier than the old method of data validation, which you had to use each time you needed to save settings in a plugin. The settings API is found at http://codex.wordpress.org/Settings_API.
+
+## Options API
+
+Used for storing option data in the WordPress database. The Options API provides an easy way to create, update, retrieve, and delete option values. The options API is found at the following URL: http://codex.wordpress.org/Options_API
+
+## Dashboard Widgets API
+
+Used for creating admin dashboard widgets. Widgets added from the API automatically contain all jQuery features that the core admin dashboard widgets have, including drag/drop, minimize, and hiding via screen options. The dashboard widgets API is found at http://codex.wordpress.org/Dashboard_Widgets_API.
+
+## Rewrite API
+
+Used for creating custom rewrite rules. This API allows you to create custom rewrite rules just as you would in your .htaccess file. You can also create custom permalink structure tags (that is, %postname%), add static endpoints (that is, /my‐page/), and even add additional feed links. The Rewrite API functions are located in /wp‐includes/rewrite.php at http://codex.wordpress.org/Rewrite_API.
+
+
+For more information on all WordPress APIs visit the Codex page at http://codex.wordpress.org/WordPress_API's.
