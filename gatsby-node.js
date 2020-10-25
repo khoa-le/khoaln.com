@@ -247,7 +247,7 @@ function onCreateMdxNode({node, getNode, actions}) {
   createNodeField({
     name: 'editLink',
     node,
-    value: `https://github.com/khoa-le/khoaln.com/edit/master${node.fileAbsolutePath.replace(
+    value: `https://github.com/khoa-le/khoaln.com/edit/main${node.fileAbsolutePath.replace(
       __dirname,
       '',
     )}`,
@@ -256,7 +256,7 @@ function onCreateMdxNode({node, getNode, actions}) {
   createNodeField({
     name: 'historyLink',
     node,
-    value: `https://github.com/khoa-le/khoaln.com/commits/master${node.fileAbsolutePath.replace(
+    value: `https://github.com/khoa-le/khoaln.com/commits/main${node.fileAbsolutePath.replace(
       __dirname,
       '',
     )}`,

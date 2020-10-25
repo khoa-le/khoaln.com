@@ -1,0 +1,200 @@
+---
+slug: 'how-to-use-wordpress-database-class'
+title: 'How to use WordPress database class'
+date: '2020-10-25'
+author: 'Khoa Le'
+description:
+  '_How to use wordpress database class_'
+categories:
+  - 'wordpress'
+keywords:
+  - 'wordpress'
+banner: './images/banner.jpeg'
+bannerCredit:
+  'Photo by [Shahadat Rahman](https://unsplash.com/photos/gnyA8vd3Otc)'
+---
+
+>
+>This content below I was summarized from **`Professioncal Worpress Design and Development`** by Brad Williams, Davide Damstra and Hal Stern.
+>
+
+
+WordPress features an object class with method functions for working with the database directly.
+This database class is called `wpdb` and located in the `wp-includes/wp-db.php`.
+Any time you are querying the WP database in PHP code, you should use the `wpdb` class.
+The main reason for using this class is to allow WordPress to execute your queries in the safest way possible.
+
+### Simple Database Queries.
+
+When using the `wpdb` class, you must first define `$wpdb` as a global variable before it will be available for use.
+To do so, just drop this line of code directly preceding any `$wpdb` function call:
+
+```php
+global $wpdb;
+```
+
+One of the most important functions in the `wpdb` class is the `prepare()` function.
+This function is used for escaping variables passed to your SQL queries. This is critical step in preveting SQL injection attacks on your website.
+
+> **Warning**: All queries should be passed through the prepare() function before being executed.
+
+The `prepare()` function accepts a minimum of two parameters:
+```php
+$wpdb->prepare($query, $value1);
+```
+The `$query` parameter is the database query you want to run. The `$value1` parameter is the first
+value you want to replace in the query. You can add additional value parameters as needed. Let's look an example:
+
+``` php
+global $wpdb;
+
+$field_key = 'address';
+$field_value = ' 1428 Elm St';
+$wpdb->query($wpdb->prepare("INSERT INTO $wpdb->my_custom_table
+(id, field_key, field_value) VALUES (%d, %s, %s) ", 1, $field_key, $field_value ) );
+
+```
+
+This example adds data into a none-default, custom table in WordPress that you would have
+previously created. When using `prepare()`, make sure to replace any variables in your query with
+`%s` for strings, %d for integers and %f for floats. Then list the variables as parameters
+for the `prepare()` function in the exact same order. In the preceding example %d represents 1,
+%s represents `$field_key`, and the second %s represents `$field_value`. Examples throughout this section
+all use the `prepare()` function, which highlights its importance when working with database queries.
+
+Notice that this example uses `$wpdb‐>my_custom_table` to reference the table in WordPress. This translates to
+`wp_my_custom_table` if `wp_` is the table prefix. This is the proper way to determine the correct table
+prefix when working with tables in the WordPress database.
+
+The `$wpdb->query()` method is used to execute a simple query. This function is primarily used for `SELECT` statements.
+Despite its name, it's not only for SQL `SELECT` queries. but will execute any SQL statement against the database.
+Here's a basic query function example:
+
+```php
+global $wpdb;
+
+$comment_count = $wpdb->query($wpdb->prepare(" DELETE FROM $wpdb->my_custom_table
+ WHERE id = %d AND field_key= %d", 1, 'address'));
+
+```
+
+### Complex Database Operations
+
+To retrieves an entire table row. You will want to use the [get_row()](https://developer.wordpress.org/reference/classes/wpdb/get_row/) function.
+
+```php
+global $wpdb;
+
+$thepost = $wpdb->get_row( $wpdb->prepare(" SELECT * FROM $wpdb->posts WHERE ID= %d", 1));
+echo $thepost->post_title;
+
+
+```
+
+The standard `SELECT` queries should use the [get_results()](https://developer.wordpress.org/reference/classes/wpdb/get_results/) function for retrieving multiple rows of data from the database.
+The following function returns the SQL result data as an array:
+```php
+global $wpdb;
+
+$liveposts = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_title FROM
+$wpdb->posts WHERE post_status = %d ", 'publish' ) );
+
+foreach ( $liveposts as $livepost ) {
+  echo '<p>' .$livepost->post_title. '</p>';
+}
+```
+
+The WordPress database class also features specific functions for UPDATE, INSERT, and DELETE statements.
+These three functions eliminate the need for custom SQL queries because WordPress will create them for you
+based on the values passed into the function. Here is how the insert() function is structured:
+
+- Insert Function `$wpdb->insert( $table, $data, $format );`
+```php
+
+$wpdb->insert( $wpdb->postmeta, array(
+        'post_id'
+        'meta_key'
+        'meta_value' => '1428 Elm St.'
+    ), array(
+        '%d', '%s', '%s'
+    )
+);
+```
+- Update Function `$wpdb->update( $table, $data, $where, $format, $where_format );`
+```php
+
+$wpdb->update( $wpdb->postmeta,
+    array('meta_value' => '333 Wonderview Ave' ),
+    array(
+        'post_id' => '1', 'meta_key' => 'address'),
+   )
+   array( '%s' ),
+   array( '%d','%s')
+);
+```
+- Delete Function `$wpdb->delete( $table, $where, $where_format );`
+
+```php
+
+$wpdb->delete( $wpdb->postmeta,
+    array(
+        'post_id' => '1',
+        'meta_key' => 'address'
+    ),
+    array( '%d','%s' )
+);
+```
+
+The `insert()`, `update()`, and `delete()` functions shown do not need to be wrapped with the `prepare()` function.
+These functions actually use the `prepare()` function after concatenating the query from the values passed to the functions.
+This is a much easier method than manually creating your INSERT, UPDATE, and DELETE queries in WordPress.
+
+### Dealing with Errors
+
+Any time you are working with queries, it's nice to see error messages. By default, if a custom query fails,
+nothing is returned so it's hard to determine what is wrong with your query. The `wpdb` class provides function for
+displaying MySql errors to the page. Here's an example of using these functions:
+
+```php
+$wpdb->show_errors();
+$liveposts = $wpdb->get_results( $wpdb->prepare("SELECT ID, post_title
+FROM $wpdb->posts_FAKE WHERE post_status = 'publish'") );
+$wpdb->print_error();
+```
+
+The `show_errors()` function must be called directly before you execute a query. The `print_error()` function must
+ be called directly after you execute a query. If there are any errors in your SQL statement, the error messages
+ are displayed. You can also call the `$wpdb‐>hide_errors()` function to hide all MySQL errors, or call the
+ `$wpdb‐>flush()` function to delete the cached query results.
+
+The database class contains additional variables that store information about WordPress queries.
+Following is a list of some of the more common variables:
+
+```php
+var_dump( $wpdb->insert_id ); // Inserted ID after execute insert query
+var_dump( $wpdb->num_queries ); // total number of queries ran
+var_dump( $wpdb->num_rows ); // total number of rows returned by the last query var_dump( $wpdb->last_result ); // most recent query results
+var_dump( $wpdb->last_query ); // most recent query executed
+var_dump( $wpdb->col_info ); // column information for the most recent query
+```
+
+Another very powerful database variable is the $queries variable. This stores all of the queries run by WordPress.
+ To enable this variable, you must first set the constant value SAVEQUERIES to true in your wp‐config.php file.
+ This tells WordPress to store all of the queries executed on each page load in the $queries variable.
+  First drop this line of code in your wp‐config.php file:
+
+`define( 'SAVEQUERIES', true );`
+
+Now all queries will be stored in the $queries variable. You can display all of the query information like so:
+
+`var_dump( $wpdb->queries ); // displays all queries executed during page load`
+
+## Conclusion
+
+The database query class is a major asset when working with the WordPress database directly,
+as you will see when developing a plugin or building a more complex Loop. All of the previously mentioned database
+ class functions use specific escaping techniques to verify that your queries are executed in the safest manner possible.
+
+The query preparation and escaping functions ensure that inputs don’t become SQL functions, no matter how craftily
+ they’re set up. It is essential that you follow these methods for querying data to ensure your website is the most
+  efficient and uses the safest techniques possible.
