@@ -16,13 +16,13 @@ bannerCredit:
 ---
 
 
-We develop Magento Ecommerce for the client that help them Ecommerce website also Order management. We have a lot of
-customize admin page to help them more efficient.
+We develop Magento Ecommerce that help our client build Ecommerce website also Order management. We have a lot of
+customization on admin page to make order management workflow more efficient.
 
 This story begins when we have 2 call center companies that want to use the same Magento admin site to create order. We should
 recognize who was created order. So we decided that we create new custom field on sales order and show that information to the sales order grid.
 
-Now let's start learn something essential:
+Let's start:
 
 ## Step 1
 We should make new custom module. We create 2 new files `app/code/Khoaln/Sales/registration.php` and `app/code/Khoaln/Sales/etc/module.xml`
@@ -135,7 +135,10 @@ and extend the `ales_order_grid` UI component
 
 ```
 
-## Step 5
+Just that, now refresh cache and see the result in admin page.
+
+![Added call center to sales order grid](./images/call-center-column-added-to-grid.jpg "Added call center to sales order grid")
+
 Maybe sometimes you will ask yourself, how can Magento handle it? Please look at this function in
 `vendor/magento/module-sales/Observer/GridSyncInsertObserver.php`
 
@@ -165,7 +168,7 @@ Maybe sometimes you will ask yourself, how can Magento handle it? Please look at
     }
 ```
 
-So the just call the function `refresh` from `Grid` class and update back to the `sales_order_grid` table.
+So the just call the function `refresh` from `Grid` class in `sales_order_save_after` event and update back to the `sales_order_grid` table.
 
 ## Conclusion
 
