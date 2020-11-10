@@ -105,7 +105,7 @@ In this case, because our data already in the `sales_order` table we just need t
 ```xml
 <virtualType name="Magento\Sales\Model\ResourceModel\Order\Grid" type="Magento\Sales\Model\ResourceModel\Grid">
     <arguments>
-        <argument name="columns">
+        <argument name="columns" xsi:type="array">
             <item name="call_center_id" xsi:type="string">sales_order.call_center_id</item>
         </argument>
     </arguments>
