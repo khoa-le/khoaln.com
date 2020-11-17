@@ -51,16 +51,6 @@ const Footer = ({ maxWidth}) => (
           <GitHub />
           <RSS />
         </div>
-
-        <Link to="/" aria-label="Return to homepage">
-          <img
-            src={Signature}
-            alt="Kent C. Dodds"
-            css={css`
-              max-width: 100px;
-            `}
-          />
-        </Link>
       </div>
     </Container>
   </footer>
