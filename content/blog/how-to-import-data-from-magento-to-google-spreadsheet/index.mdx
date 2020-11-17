@@ -18,8 +18,16 @@ bannerCredit:
 This week, we just launched a function for client's Ecommerce site that show the contact form when user clicked
 on the call button out of a working hour ( that time, Call Center can't support and receive calls).
 
-So we develop a form that receive a register include name and phone number/email from visitors and automatically sync to
+So we develop a form that receive a registration include name and phone number/email from visitors and automatically sync to
 Google SpreadSheet. _Everything Should Be Made as Simple as Possible._
+
+> **Disclaimer**: You should care about Google Sheet Limitation.
+>
+> This version of the Google Sheets API(v4) has a limit of 500 requests per 100 seconds per project, and 100 requests per 100 seconds per user.
+>
+> Limits for reads and writes are tracked separately. There is no daily usage limit.
+>
+> <a href="https://developers.google.com/sheets/api/limits" target="_blank">Read More</a>
 
 In this post you will know how easy and simple to import magento data to Google SpreadSheet, you can apply any kinds
 of data you want to import. 1 Bonus about how we create magento to Rest Api with our custom entity.
