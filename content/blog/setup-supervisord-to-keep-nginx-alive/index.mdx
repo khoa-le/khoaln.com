@@ -1,0 +1,66 @@
+---
+slug: 'setup-supervisord-to-keep-nginx-alive'
+title: 'Setup Supervisord to keep nginx alive'
+date: '2023-03-04'
+author: 'Khoa Le'
+description: '_Setup Supervisord to keep nginx alive_'
+categories:
+  - 'nginx'
+  - 'supervisord'
+keywords:
+  - 'nginx'
+  - 'supervisord'
+banner: './images/banner.jpeg'
+bannerCredit:
+  'Photo by [Shahadat Rahman](https://unsplash.com/photos/gnyA8vd3Otc)'
+---
+
+In some cases in the production environment, we faced downtime of the website,
+Nginx process disappeared. We want to keep the Nginx always alive without any
+reasons. So, we use the Supervisord as a supervisor who make sure Nginx is
+always alive
+
+### Add Nginx configuration on Supervisord
+
+```shell
+$ sudo vim /etc/supervisor/conf.d/nginx.conf
+
+[program:nginx]
+command=/usr/sbin/nginx -g "daemon off;"
+autostart=true
+autorestart=true
+startretries=5
+numprocs=1
+startsecs=0
+process_name=%(program_name)s_%(process_num)02d
+stderr_logfile=/var/log/supervisor/%(program_name)s_stderr.log
+stderr_logfile_maxbytes=10MB
+stdout_logfile=/var/log/supervisor/%(program_name)s_stdout.log
+stdout_logfile_maxbytes=10MB
+
+```
+
+Let supervisord know about new config.
+
+```shell
+$ sudo supervisorctl reread
+nginx: available
+```
+
+Let supervisord start nginx service
+
+```shell
+$ sudo supervisorctl update
+nginx: added process group
+```
+
+Verify if supervisor started nginx service.
+
+```shell
+sudo supervisorctl
+nginx:nginx_00
+supervisor>
+```
+
+Then done, you can try to stop the nginx service and you see the new Nginx's
+proccess always start the new one.
