@@ -233,6 +233,21 @@ function Layout({
         <html lang="en" />
         <script src="https://js.tito.io/v1" async />
         <noscript>This site runs best with JavaScript enabled.</noscript>
+        <script
+          async
+          src="https://www.googletagmanager.com/gtag/js?id=G-57GD1JSMKR"
+        />
+        <script type="text/javascript">
+          {`
+          {
+               window.dataLayer = window.dataLayer || [];
+               function gtag(){dataLayer.push(arguments);}
+               gtag('js', new Date());
+                
+               gtag('config', 'G-57GD1JSMKR');
+          }
+          `}
+        </script>
       </Helmet>
       <div
         css={css`

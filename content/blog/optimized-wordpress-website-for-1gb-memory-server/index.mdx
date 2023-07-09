@@ -1,0 +1,57 @@
+---
+slug: 'optimized-wordpress-website-for-1gb-memory-server'
+title: 'Optimized wordpress website for 1GB memory server'
+date: '2020-10-25'
+author: 'Khoa Le'
+description: '_Optimized wordpress website for 1GB memory server_'
+categories:
+  - 'wordpress'
+keywords:
+  - 'wordpress'
+banner: './images/banner.jpeg'
+bannerCredit:
+  'Photo by [Shahadat Rahman](https://unsplash.com/photos/gnyA8vd3Otc)'
+---
+
+### Adjusting PHP-FPM for Performance + Low Memory
+
+PHP-FPM has as a default configuration that uses more memory than necessary. It
+has spare php-fpm processes ready to go, taking up memory in case there is PHP
+code to process. While not a problem if you have tons of RAM, it can be an issue
+for low RAM VPS and if you are using aggressive page caching then it is memory
+being used unnecessarily that could be used by MariaDB MySQL or other critical
+processes. I always use nginx with PHP-FPM running PHP 7.0 (or the latest
+version) so this tutorial explains how to tweak the configuration to use as
+little RAM as possible.
+
+```bash
+sudo vim /etc/php/7.4/fpm/pool.d/www.conf
+```
+
+Change `pm = dynamic` to `pm = ondemand`
+
+Comment `pm.start_servers`, `pm.min_spare_servers` and `pm.max_spare_servers`
+
+Then comment out for `pm.process_idle_timeout` and `pm.max_requests`
+
+### Adjusting Mysql and MariaDB
+
+```bash
+[mysqld]
+symbolic-links=0
+skip-external-locking
+key_buffer_size = 32K
+max_allowed_packet = 4M
+table_open_cache = 8
+sort_buffer_size = 128K
+read_buffer_size = 512K
+read_rnd_buffer_size = 512K
+net_buffer_length = 4K
+thread_stack = 480K
+innodb_file_per_table
+max_connections=100
+max_user_connections=50
+wait_timeout=50
+interactive_timeout=50
+long_query_time=5
+```
