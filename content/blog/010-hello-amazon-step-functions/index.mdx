@@ -1,0 +1,150 @@
+---
+slug: '010-hello-aws-step-functions'
+title: 'Hello AWS Step Functions'
+date: '2023-03-12'
+author: 'Khoa Le'
+description: '_Hello AWS step functions_'
+categories:
+  - 'aws'
+  - 'serverless'
+  - 'lambda'
+  - 'step functions'
+keywords:
+  - 'aws'
+  - 'serverless'
+  - 'lambda'
+  - 'step functions'
+banner: './images/photo-1502101872923-d48509bff386.jpg'
+bannerCredit:
+  'Photo by [Jukan Tateisi](https://unsplash.com/photos/bJhT_8nbUA0)'
+---
+
+At oRo, we start a project with Serverless architecture. With this opportunity,
+we have a chance to research the efficient design that helps the project that is
+scalable and flexible.
+
+The first thing that we take a look is AWS Lambda. AWS Lambda is a great choice
+for solving many problems and situations. It is also cost-effective, but It has
+some limitations.
+
+### What are the limitations of AWS Lambda?
+
+#### Technical Limitations
+
+There are some limitation of AWS Lambda
+
+- Container image code package size is 10 GB (maximum uncompressed image size,
+  including all layers)
+- The default deployment package size is 50 MB.
+- The maximum execution timeout for a function is 900 seconds (15 minutes).
+- Requests limitations by Lambda:
+- Request and response (synchronous calls) body payload size can be up to to 6
+  MB.
+- Event request (asynchronous calls) body can be up to 256 KB.
+
+About the detail, you can check in the official document of AWS:
+https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-limits.html
+
+#### There is no way to share data between executions
+
+As each function execution is independent, there is no way to share data between
+lambda executions.
+
+#### Latency is not guaranteed
+
+The latency of a lambda function execution is not guaranteed because of cold
+starts.
+
+So before executing the code, some setup process needs to happen. This waiting
+time is called the `cold-start`.
+
+#### Not suitable for long-running tasks.
+
+There is a hard limit of 15 minutes of execution per call for each lambda.
+
+So if you are planning to get some long-running tasks done using AWS lambda,
+then think twice! Because the function will die after 15 minutes.
+
+### What are AWS Step Functions?
+
+> AWS Step Functions is a visual workflow service that helps developers use AWS
+> services to build distributed applications, automate processes, orchestrate
+> microservices, and create data and machine learning (ML) pipelines.
+
+#### AWS Step Function Benefits:
+
+1. Build and deploy rapidly
+
+Workflow Studio offers a straightforward drag-and-drop user interface that makes
+getting started quickly. Step Functions allow you to quickly connect services,
+systems, or people by using low-code, event-driven workflows to describe complex
+business logic.
+
+2. Write less integration code
+
+Build robust business workflows, data pipelines, or apps using AWS resources
+from more than 200 services, such as Lambda, ECS, Fargate, Batch, DynamoDB, SNS,
+SQS, SageMaker, EventBridge, or EMR.
+
+3. Build fault-tolerant and stateful workflows
+
+Step Functions keeps track of managing state, checkpoints, and restarts so that
+your workflows proceed as planned. Based on your predefined business logic,
+automatic error and exception handling are provided through built-in try/catch,
+retry, and rollback capabilities.
+
+4. Designed for reliability and scale
+
+Depending on your particular use case, you can choose between the Standard or
+Express workflow types that Step Functions offers. Long-running workloads are
+managed using standard workflows. Workloads for high-volume event processing are
+supported by Express Workflows.
+
+5. Parallelism
+
+Declarative parallelism is possible for the work. A state of a step machine may
+invoke different states simultaneously. The workflow will proceed more quickly
+as a result.
+
+6. High Execution Time
+
+If some of the tasks in the workflow require a lot of time (exceeding 10
+minutes), they can be executed on ECS, EC2, or as an Activity hosted outside of
+AWS because Step Functions have a maximum execution time of one year.
+
+### How Step Functions works
+
+When working with AWS Step Functions, there are some concept that we should know
+and keep in mind:
+
+- Do some work in your state machine (a
+  [Task](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-task-state.html)
+  state)
+- Make a choice between branches of execution (a
+  [Choice](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-choice-state.html)
+  state)
+- Stop an execution with a failure or success (a
+  [Fail](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-fail-state.html)
+  or
+  [Succeed](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-succeed-state.html)
+  state)
+- Pass its input to its output, or inject some fixed data into the workflow (a
+  [Pass](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-pass-state.html)
+  state)
+- Provide a delay for a certain amount of time, or until a specified date and
+  time (a
+  [Wait](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-wait-state.html)
+  state)
+- Begin parallel branches of execution (a
+  [Parallel](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-parallel-state.html)
+  state)
+- Dynamically iterate steps (a
+  [Map](https://docs.aws.amazon.com/step-functions/latest/dg/amazon-states-language-map-state.html)
+  state)
+
+I think the information above that is enough to get a practice with AWS Step
+Functions. In the
+[next article](/blog/011-image-processing-serverless-in-real-life), We will
+follow the AWS workshop here:
+https://www.image-processing.serverlessworkshops.io/ to build a real AWS
+Serverless Project with AWS Step Functions.

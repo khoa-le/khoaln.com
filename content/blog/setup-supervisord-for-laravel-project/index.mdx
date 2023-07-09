@@ -1,0 +1,60 @@
+---
+slug: 'setup-supervisord-for-laravel-project'
+title: 'Setup Supervisord for Laravel Project'
+date: '2023-03-04'
+author: 'Khoa Le'
+description: '_Setup Supervisord for Laravel Project_'
+categories:
+  - 'laravel'
+  - 'supervisord'
+keywords:
+  - 'laravel'
+  - 'supervisord'
+banner: './images/mohammad-rahmani-cY1SvvEfRwk-unsplash.jpg'
+bannerCredit:
+  'Photo by [Mohammad Rahmani](https://unsplash.com/photos/cY1SvvEfRwk)'
+---
+
+Laravel worker should always run on the production environment to serve the jobs
+that application send to. To keep the process running, we use the Supervisord to
+help
+
+### Add Laravel Worker configuration on Supervisord
+
+```shell
+$ sudo vim /etc/supervisor/conf.d/laravel-worker.conf
+
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php8.1 /home/forge/your-project/artisan queue:listen database --sleep=3 --tries=3
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=forge
+numprocs=1
+stdout_logfile=/home/forge/.forge/laravel-worker.log
+
+```
+
+Let supervisord know about new config.
+
+```shell
+$ sudo supervisorctl reread
+laravel-worker: available
+```
+
+Let supervisord start worker
+
+```shell
+$ sudo supervisorctl update
+laravel-worker: added process group
+```
+
+Verify if supervisor started worker .
+
+```shell
+sudo supervisorctl
+laravel-worker:laravel-worker_00
+supervisor>
+```
