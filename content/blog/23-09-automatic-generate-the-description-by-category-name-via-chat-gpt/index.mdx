@@ -1,0 +1,116 @@
+---
+slug: '23-09-automatic-generate-the-description-by-category-name-via-chat-gpt'
+title: 'Automatic generate the description by category name via chat GPT'
+date: '2023-09-25'
+author: 'Khoa Le'
+description: '_Automatic generate the description by category name via ChatGPT_'
+categories:
+  - 'laravel'
+banner: './images/banner.jpg'
+bannerCredit:
+  'Photo by [Mojahid Mottakin](https://unsplash.com/photos/pDgyu4ALp3I)'
+---
+
+The Chat GPT is quite popular nowaday, it's a model that can generate the text
+based on the input text.
+
+This article will show you how to use the ChatGPT to generate the description
+for the category name.
+
+We are gonna create a very simple API on Laravel project with the PHP Open AI
+SDK.
+
+## Create the Laravel project
+
+```bash
+composer create-project laravel/laravel chatgpt-example
+```
+
+## Install the PHP Open AI SDK
+
+```bash
+composer require openai-php/laravel
+```
+
+## Publish the config file
+
+```bash
+php artisan vendor:publish --provider="OpenAI\Laravel\ServiceProvider"
+```
+
+## Setup the API key on the .env file
+
+```bash
+OPENAI_API_KEY=sk-xxxxxx
+```
+
+## Start play with ChatGPT first time
+
+You should create the account and try to play with ChatGPT on
+[Open AI Playground](https://platform.openai.com/playground)
+
+![Open AI Playground](/images/chatgpt-open-ai-playground.png)
+
+They have 3 type of message roles: System, User and Assistant.
+
+- System: The system message helps set the behavior of the assistant. For
+  example, you can modify the personality of the assistant or provide specific
+  instructions about how it should behave throughout the conversation. However
+  note that the system message is optional and the model’s behavior without a
+  system message is likely to be similar to using a generic message such as "You
+  are a helpful assistant."
+- User: Requests or comments for the assistant to respond to. Assistant messages
+  store previous assistant responses, but can also be written by you to give
+  examples of desired behavior.
+- Assistant: The message from the system to the user.
+
+The point here that you have to learn about how to use the system message to get
+the best result. I researched some examples and found that the best way to get
+the best result is to provide the example of the answer for the system message.
+
+- [GPT best practices](https://platform.openai.com/docs/guides/gpt-best-practices)
+- [How to write "System" Instructions for OpenAI's GPT-4 Chat API](https://www.rootstrap.com/blog/how-to-write-system-instructions-for-openais-gpt-4-chat-api)
+  by Diego Suárez
+
+After understand about that, we can start to create the API to generate the
+description for the category name.
+
+## Create the API route
+
+```php
+Route::get('/get-description',function (){
+    $category=request()->get('c','');
+    if($category){
+        $result = OpenAI::chat()->create(
+            [
+                'model' => "gpt-3.5-turbo-16k-0613",
+                'messages' => [
+                    ['role' => 'system', 'content' => "You will be asked to generate the product category description for the Electronic industry. \nThe user language is #vi\n\nThe answers are following examples below:\nExample #11: A Microswitch is a switch with an actuator and a quick-action mechanism. A contact transition (open/close) mechanism that is not affected by the operating speed or operating force of the switch is called a fast-acting mechanism. With this structure, the position of the switch opening/closing operation compared to the displacement of the actuator has extremely high reproducibility. A suitable switch for accurate and precise detection of an object's position. Actuator shapes include push buttons, rollers, bars, and levers.\n\nExample #2: A safety switch is a switch that monitors safety for safety protection based on the ``principle of isolation,'' which prevents people and sources of danger from approaching or coming into contact with each other, and the ``principle of stopping,'' which prevents machines from becoming a source of danger if they stop. Also called a safety switch. Generally speaking, safety switches often refer to safety door switches, but in this category, mat switches, tape switches, bumper switches, etc. are also listed as safety switches.\n\nExample #3: SSR (solid state relay) is a non-contact relay that combines an isolated circuit such as a photocoupler and a semiconductor switching element. SSR is an abbreviation for Solid State Relay. Diodes, transistors, thyristors, triacs, and MOSFETs are used as switching elements. Except for MOSFET, the only operation is make (A contact). Since it is non-contact, there is no arcing or chattering, and it has high speed, long life, and is suitable for frequent operations. Zero-cross switching is also possible."],
+                    ['role' => 'user', 'content' =>$category],
+                ],
+                'temperature'=>0,
+                'max_tokens'=>1024,
+                'top_p'=>1,
+                'frequency_penalty'=>0,
+                'presence_penalty'=>0,
+            ]
+        );
+
+        return ($result['choices'][0]['message']['content']);
+    }
+    return 'No category';
+});
+
+```
+
+Then we can get the real result from the chat GPT by call the API:
+
+```bash
+curl http://127.0.0.1:8000/get-description?c=SoC
+```
+
+You will see the response:
+
+```bash
+SoC (System on a Chip) là một loại vi mạch tích hợp trên một chip duy nhất, bao gồm nhiều thành phần chức năng khác nhau như bộ xử lý, bộ nhớ, bộ điều khiển giao tiếp và các linh kiện khác. SoC thường được sử dụng trong các thiết bị điện tử như điện thoại di động, máy tính bảng và các thiết bị thông minh khác. Với việc tích hợp nhiều chức năng trên cùng một chip, SoC giúp giảm kích thước, tiết kiệm năng lượng và tăng hiệu suất của các thiết bị điện tử
+```
