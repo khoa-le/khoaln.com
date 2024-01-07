@@ -1,0 +1,63 @@
+---
+slug: '2023-10-22-kubernetes-for-beginner'
+title: 'Kubernetes for beginner'
+date: '2023-10-22'
+author: 'Khoa Le'
+description: '_Kubernetes for beginner_'
+categories:
+  - 'kubernetes'
+banner: './images/banner.jpg'
+bannerCredit:
+  'Photo by [Markus Spiske](https://unsplash.com/@markusspiske) on
+  [Unsplash](https://unsplash.com)'
+---
+
+# Kubernetes for beginner
+
+## Geting start with the kubernetes on MACOS
+
+1. Install Minikube: `brew install minikube`
+2. Install kubectl: `brew install kubectl`
+3. Start minikube cluster: `minikube start`
+
+## Some basic command for kubectl
+
+- `kubectl get nodes` or `kubectl get no -o yaml`: get all nodes in the cluster
+- `kubectl get pods` or `kubectl get po -o yaml`: get all pods in the cluster
+- `kubectl get services` or `kubectl get svc -o yaml`: get all services in the
+  cluster
+- `kubectl get deployments` or `kubectl get deploy -o yaml`: get all deployments
+  in the cluster
+- `kubectl describe pod <pod-name>`: get detail of a pod
+- `kubectl describe node <node-name>`: get detail of a node
+
+##Run an app Make sure you have the docker image of the app you want to run on
+the cluster. If not, you can build it by yourself or pull it from the docker
+hub. My app was listen on the port 8180.
+
+    1. kubectl create deployment orovn-kube101 --image=orovn/kube101-go
+    2. kubectl expose deployment orovn-kube101 --type=NodePort --port=8180
+    3. minikube service orovn-kube101
+
+### Scaling the app
+
+`kubectl scale deployment orovn-kube101 --replicas=3`
+
+or `kubectl edit deployment orovn-kube101` and Modify the replicas line, and set
+it to 3
+
+### Tail all logs from all the pods in the deployment
+
+`kubectl logs -f -l app=hello-go --prefix=true`
+
+### Update the app
+
+    1. kubectl set image deployment/orovn-kube101 orovn-kube101=orovn/kube101-go:v2
+    2. kubectl rollout status deployment/orovn-kube101
+    3. kubectl rollout history deployment/orovn-kube101
+    4. kubectl rollout undo deployment/orovn-kube101
+
+### Clean up
+
+    1. kubectl delete service orovn-kube101
+    2. kubectl delete deployment orovn-kube101

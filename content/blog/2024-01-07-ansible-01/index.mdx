@@ -1,0 +1,190 @@
+---
+slug: '2024-01-07-ansible-series-p1'
+title: 'Ansible Series - P1'
+date: '2024-01-07'
+author: 'Khoa Le'
+description: '_Ansible Series - P1_'
+categories:
+  - 'ansbile'
+banner: './images/banner.jpg'
+bannerCredit:
+  'Photo by [Possessed Photography](https://unsplash.com/@possessedphotography)
+  on [Unsplash](https://unsplash.com)'
+---
+
+# Ansible Series
+
+When I joined to ORO, there are some Project that were apply the Ansbile to
+setup the server. After that I tried to use Ansible to improve the automation
+work like setup the server, deploy the application, etc. So I will write some
+post to share my experience with Ansible.
+
+Today, when I am working on my HomeLab, The VM normally created and deleted. So
+I need to setup the VM quickly. So I will use Ansible to setup the VM.
+
+## Install Ansible on the Working Machine.
+
+I install the Ansbile on 1 main Debian VM. In this machine I can do everything
+with Ansible.
+
+```bash
+sudo apt-add-repository ppa:ansible/ansible
+
+sudo apt update
+
+sudo apt install ansible
+```
+
+## Setup the inventory file
+
+The inventory file is the file that contain the list of the server that we want
+to manage. In this file we can define the group of the server, the variable for
+each server, etc.
+
+```txt
+[homeserver]
+svr01 ansible_host=192.168.1.253 ansible_user=khoa
+svr02 ansible_host=192.168.1.176 ansible_user=khoa
+svr03 ansible_host=192.168.1.155 ansible_user=khoa
+
+```
+
+`svr01` is alias, `ansible_user=khoa` is host variable
+
+I have 3 Ubuntu VM that I want to setup the Kubernetes cluster. So I will create
+the inventory file with the name `inventory` and put the content above to the
+file.
+
+Then, Check the inventory is correct.
+
+```bash
+ansible-inventory -i inventory --list
+```
+
+The output should be like this:
+
+```json
+{
+  "_meta": {
+    "hostvars": {
+      "svr01": {
+        "ansible_host": "192.168.1.253",
+        "ansible_user": "khoa"
+      },
+      "svr02": {
+        "ansible_host": "192.168.1.176",
+        "ansible_user": "khoa"
+      },
+      "svr03": {
+        "ansible_host": "192.168.1.155",
+        "ansible_user": "khoa"
+      }
+    }
+  },
+  "all": {
+    "children": ["ungrouped", "homeserver"]
+  },
+  "homeserver": {
+    "hosts": ["svr01", "svr02", "svr03"]
+  }
+}
+```
+
+We can have multiple group in the inventory file. For example, I want to create
+the group for the Kubernetes master and worker. So I will add the content below
+to the inventory file.
+
+```txt
+[masters]
+master1 ansible_host=203.0.113.111
+
+
+[workers]
+worker1 ansible_host=203.0.113.113
+worker2 ansible_host=203.0.113.114
+
+[masters:vars]
+ansible_user=root
+
+[workers:vars]
+ansible_user=worker
+```
+
+Running the command to check the connection to the server.
+
+```bash
+ansible all -i inventory -m ping
+```
+
+## Add the Playbook
+
+This is the simple playbook that will install the docker on the server and run
+the simple container
+
+```yaml
+- hosts: homeserver
+  become: true
+  vars:
+    container_count: 4
+    default_container_name: docker
+    default_container_image: ubuntu
+    default_container_command: sleep 1d
+    ansible_sudo_pass: "[root sudo password]" //temporary push the password on the file to test out the command
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu jammy stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Install Docker Module for Python
+      pip:
+        name: docker
+
+    - name: Pull default Docker image
+      community.docker.docker_image:
+        name: "{{ default_container_image }}"
+        source: pull
+
+    - name: Create default containers
+      community.docker.docker_container:
+        name: "{{ default_container_name }}{{ item }}"
+        image: "{{ default_container_image }}"
+        command: "{{ default_container_command }}"
+        state: present
+      with_sequence: count={{ container_count }}
+```
+
+Execute the playbook
+
+```bash
+ansible-playbook -i inventory playbook.yaml
+```

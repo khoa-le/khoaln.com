@@ -1,0 +1,28 @@
+---
+slug: '2023-10-02-laravel-queue-must-know'
+title: 'Laravel Queue: Must know'
+date: '2023-10-02'
+author: 'Khoa Le'
+published: false
+description: '_Laravel Queue - Somethings you need to know_'
+categories:
+  - 'laravel'
+banner: './images/banner.jpg'
+bannerCredit:
+  'Photo by [Markus Spiske](https://unsplash.com/@markusspiske) on
+  [Unsplash](https://unsplash.com)'
+---
+
+## Dispatching Jobs
+
+### Make a first job
+
+```shell
+php artisan make:job SendEmail
+```
+
+### Dispatching Job
+
+```php
+SendEmail::dispatch($user);
+```
