@@ -9,10 +9,9 @@ module.exports = {
   siteDescription:
     'Come check out how Khoa Le can help you level up your career as a software engineer.',
   minibio: `
-    <strong>Khoa Le</strong> is a JavaScript software engineer and
-    teacher. He's taught hundreds of thousands of people how to make the world
-    a better place with quality software development tools and practices. He
-    lives with his wife and four kids in Utah.
+    <strong>Khoa Le</strong> is a software engineering manager based in Vietnam.
+    He leads a team of developers working on digital transformation projects
+    and is passionate about helping developers grow their careers.
   `,
   author: 'Khoa Le', // Author for schemaORGJSONLD
   organization: 'Khoa Le Tech LLC',

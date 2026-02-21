@@ -2,21 +2,36 @@ const fs = require('fs')
 const path = require('path')
 const {URL} = require('url')
 const rimraf = require('rimraf')
-const {spawnSync} = require('child_process')
 const slugify = require('@sindresorhus/slugify')
 const {createFilePath} = require('gatsby-source-filesystem')
-const remark = require('remark')
-const stripMarkdownPlugin = require('strip-markdown')
-const {zipFunctions} = require('@netlify/zip-it-and-ship-it')
 const config = require('./config/website')
-const blogUtils = require('./other/blog-utils')
 
-
+// Simple function to strip markdown formatting
 function stripMarkdown(markdownString) {
-  return remark()
-    .use(stripMarkdownPlugin)
-    .processSync(markdownString)
-    .toString()
+  if (!markdownString) return ''
+  return markdownString
+    // Remove headers
+    .replace(/^#{1,6}\s+/gm, '')
+    // Remove emphasis
+    .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, '$1')
+    // Remove links, keep text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    // Remove images
+    .replace(/!\[([^\]]*)\]\([^)]+\)/g, '')
+    // Remove code blocks
+    .replace(/```[\s\S]*?```/g, '')
+    // Remove inline code
+    .replace(/`([^`]+)`/g, '$1')
+    // Remove blockquotes
+    .replace(/^>\s+/gm, '')
+    // Remove horizontal rules
+    .replace(/^[-*_]{3,}$/gm, '')
+    // Remove list markers
+    .replace(/^[\s]*[-*+]\s+/gm, '')
+    .replace(/^[\s]*\d+\.\s+/gm, '')
+    // Clean up extra whitespace
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
 }
 
 const createPosts = (createPage, createRedirect, edges) => {
@@ -38,7 +53,7 @@ const createPosts = (createPage, createRedirect, edges) => {
 
     createPage({
       path: pagePath,
-      component: path.resolve(`./src/templates/post.js`),
+      component: path.resolve(`./src/templates/post.js`) + `?__contentFilePath=${node.internal.contentFilePath}`,
       context: {
         id: node.id,
         prev,
@@ -49,11 +64,12 @@ const createPosts = (createPage, createRedirect, edges) => {
 }
 
 function createBlogPages({data, actions}) {
-  if (!data.edges.length) {
-    throw new Error('There are no posts!')
+  if (!data.nodes.length) {
+    console.warn('No posts found!')
+    return
   }
 
-  const {edges} = data
+  const edges = data.nodes.map((node, i) => ({node}))
   const {createRedirect, createPage} = actions
   createPosts(createPage, createRedirect, edges)
   return null
@@ -62,14 +78,10 @@ function createBlogPages({data, actions}) {
 const createPages = async ({actions, graphql}) => {
   const {data, errors} = await graphql(`
     fragment PostDetails on Mdx {
-      fileAbsolutePath
-      id
-      parent {
-        ... on File {
-          name
-          sourceInstanceName
-        }
+      internal {
+        contentFilePath
       }
+      id
       excerpt(pruneLength: 250)
       fields {
         title
@@ -83,27 +95,23 @@ const createPages = async ({actions, graphql}) => {
       blog: allMdx(
         filter: {
           frontmatter: {published: {ne: false}}
-          fileAbsolutePath: {regex: "//content/blog//"}
+          internal: {contentFilePath: {regex: "//content/blog//"}}
         }
-        sort: {order: DESC, fields: [frontmatter___date]}
+        sort: {frontmatter: {date: DESC}}
       ) {
-        edges {
-          node {
-            ...PostDetails
-          }
+        nodes {
+          ...PostDetails
         }
       }
       writing: allMdx(
         filter: {
           frontmatter: {published: {ne: false}}
-          fileAbsolutePath: {regex: "//content/writing-blog//"}
+          internal: {contentFilePath: {regex: "//content/writing-blog//"}}
         }
-        sort: {order: DESC, fields: [frontmatter___date]}
+        sort: {frontmatter: {date: DESC}}
       ) {
-        edges {
-          node {
-            ...PostDetails
-          }
+        nodes {
+          ...PostDetails
         }
       }
     }
@@ -134,27 +142,28 @@ const onCreateWebpackConfig = ({actions}) => {
   })
 }
 
-const onCreateNode = (...args) => {
+const onCreateNode = async (...args) => {
   if (args[0].node.internal.type === `Mdx`) {
-    onCreateMdxNode(...args)
+    await onCreateMdxNode(...args)
   }
 }
 
-// eslint-disable-next-line complexity
-function onCreateMdxNode({node, getNode, actions}) {
-  const parentNode = getNode(node.parent)
+async function onCreateMdxNode({node, getNode, actions}) {
   const {createNodeField} = actions
-  let slug =
-    node.frontmatter.slug || createFilePath({node, getNode, basePath: `pages`})
-  let {isWriting} = false
+  const contentFilePath = node.internal.contentFilePath || ''
+  
+  let slug = node.frontmatter.slug || createFilePath({node, getNode, basePath: `pages`})
+  let isWriting = false
 
-  if (node.fileAbsolutePath.includes('content/blog/')) {
-    slug = `/blog/${node.frontmatter.slug || slugify(parentNode.name)}`
+  if (contentFilePath.includes('content/blog/')) {
+    const parentNode = getNode(node.parent)
+    slug = `/blog/${node.frontmatter.slug || slugify(parentNode?.name || 'post')}`
   }
 
-  if (node.fileAbsolutePath.includes('content/writing-blog/')) {
+  if (contentFilePath.includes('content/writing-blog/')) {
+    const parentNode = getNode(node.parent)
     isWriting = true
-    slug = `/writing/blog/${node.frontmatter.slug || slugify(parent.name)}`
+    slug = `/writing/blog/${node.frontmatter.slug || slugify(parentNode?.name || 'post')}`
   }
 
   createNodeField({
@@ -178,19 +187,23 @@ function onCreateMdxNode({node, getNode, actions}) {
   createNodeField({
     name: 'author',
     node,
-    value: node.frontmatter.author || 'Kent C. Dodds',
+    value: node.frontmatter.author || 'Khoa Le',
   })
 
   createNodeField({
     name: 'description',
     node,
-    value: node.frontmatter.description,
+    value: node.frontmatter.description || '',
   })
 
+  const plainText = node.frontmatter.description 
+    ? await stripMarkdown(node.frontmatter.description)
+    : ''
+  
   createNodeField({
     name: 'plainTextDescription',
     node,
-    value: stripMarkdown(node.frontmatter.description),
+    value: plainText,
   })
 
   createNodeField({
@@ -247,7 +260,7 @@ function onCreateMdxNode({node, getNode, actions}) {
   createNodeField({
     name: 'editLink',
     node,
-    value: `https://github.com/khoa-le/khoaln.com/edit/main${node.fileAbsolutePath.replace(
+    value: `https://github.com/khoa-le/khoaln.com/edit/main${contentFilePath.replace(
       __dirname,
       '',
     )}`,
@@ -256,7 +269,7 @@ function onCreateMdxNode({node, getNode, actions}) {
   createNodeField({
     name: 'historyLink',
     node,
-    value: `https://github.com/khoa-le/khoaln.com/commits/main${node.fileAbsolutePath.replace(
+    value: `https://github.com/khoa-le/khoaln.com/commits/main${contentFilePath.replace(
       __dirname,
       '',
     )}`,
@@ -273,73 +286,57 @@ function onCreateMdxNode({node, getNode, actions}) {
     node,
     value: isWriting,
   })
-
-}
-
-const onPreBootstrap = () => {
-  if (process.env.gatsby_executing_command === 'develop') {
-    return
-  }
-  require('./other/load-cache')
-  // can't run cypress on gatsby cloud currently
- /*
-  if (!process.env.SKIP_BUILD_VALIDATION && !process.env.GATSBY_CLOUD) {
-    // fire and forget...
-    spawn('./node_modules/.bin/cypress install', {
-      shell: true,
-      stdio: 'ignore',
-    })
-  }
-
-  const result = spawnSync(
-    './node_modules/.bin/npm-run-all --parallel lint test:coverage',
-    {stdio: 'inherit', shell: true},
-  )
-  if (result.status !== 0) {
-    throw new Error(`pre build failure. Status: ${result.status}`)
-  }
-
-  */
 }
 
 const onPostBuild = async ({graphql}) => {
   if (process.env.gatsby_executing_command === 'develop') {
     return
   }
-  require('./other/make-cache')
-  blogUtils.createJSONFile(graphql, './public/blog.json')
-  const srcLocation = path.join(__dirname, `netlify/functions`)
-  const outputLocation = path.join(__dirname, `public/functions`)
-  if (fs.existsSync(outputLocation)) {
-    rimraf.sync(outputLocation)
+  
+  // Create blog.json for search/other functionality
+  const {data} = await graphql(`
+    {
+      allMdx(
+        filter: {
+          frontmatter: {published: {ne: false}}
+          internal: {contentFilePath: {regex: "//content/blog//"}}
+        }
+        sort: {frontmatter: {date: DESC}}
+      ) {
+        nodes {
+          fields {
+            slug
+            title
+            description
+          }
+          frontmatter {
+            date
+            categories
+          }
+        }
+      }
+    }
+  `)
+  
+  if (data?.allMdx?.nodes) {
+    const blogData = data.allMdx.nodes.map(node => ({
+      slug: node.fields.slug,
+      title: node.fields.title,
+      description: node.fields.description,
+      date: node.frontmatter.date,
+      categories: node.frontmatter.categories,
+    }))
+    
+    fs.writeFileSync(
+      path.join(__dirname, 'public', 'blog.json'),
+      JSON.stringify(blogData, null, 2)
+    )
   }
-  fs.mkdirSync(outputLocation)
-  await zipFunctions(srcLocation, outputLocation)
-  // can't run cypress on gatsby cloud currently
-/*
-if (!process.env.SKIP_BUILD_VALIDATION && !process.env.GATSBY_CLOUD) {
-  const result = spawnSync('npm run test:e2e', {
-    stdio: 'inherit',
-    shell: true,
-  })
-  if (result.status !== 0) {
-    throw new Error(`post build failure. Status: ${result.status}`)
-  }
-}
-
- */
 }
 
 module.exports = {
-createPages,
-onCreateWebpackConfig,
-onCreateNode,
-onPreBootstrap,
-onPostBuild,
+  createPages,
+  onCreateWebpackConfig,
+  onCreateNode,
+  onPostBuild,
 }
-
-/*
-eslint
-consistent-return: "off",
-max-statements: "off",
-*/

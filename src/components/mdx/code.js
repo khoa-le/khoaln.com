@@ -1,8 +1,8 @@
 import React from 'react'
-import {css} from '@emotion/core'
-import theme from 'prism-react-renderer/themes/nightOwl'
+import {css} from '@emotion/react'
+import {Highlight, themes} from 'prism-react-renderer'
+const theme = themes.nightOwl
 import {bpDesktopOnly} from '../../lib/breakpoints'
-import Highlight, {defaultProps} from 'prism-react-renderer'
 
 const RE = /{([\d,-]+)}/
 
@@ -43,9 +43,8 @@ function Code({codeString, language, metastring}) {
   const shouldHighlightLine = calculateLinesToHighlight(metastring)
   return (
     <Highlight
-      {...defaultProps}
       code={codeString}
-      language={language}
+      language={language || 'text'}
       theme={theme}
     >
       {({className, style, tokens, getLineProps, getTokenProps}) => (

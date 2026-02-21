@@ -11,7 +11,7 @@ function SEO({
   postData,
   metaImage,
   isBlogPost,
-  frontmatter: postMeta = postData.childMarkdownRemark.frontmatter || {},
+  frontmatter: postMeta = {},
   title = postMeta.title || config.siteTitle,
   description = postMeta.plainTextDescription ||
     postMeta.description ||
@@ -93,18 +93,13 @@ function SEOWithQuery(props) {
 
 SEOWithQuery.propTypes = {
   isBlogPost: PropTypes.bool,
-  postData: PropTypes.shape({
-    childMarkdownRemark: PropTypes.shape({
-      frontmatter: PropTypes.any,
-      excerpt: PropTypes.any,
-    }),
-  }),
+  postData: PropTypes.object,
   metaImage: PropTypes.string,
 }
 
 SEOWithQuery.defaultProps = {
   isBlogPost: false,
-  postData: {childMarkdownRemark: {}},
+  postData: {},
   metaImage: null,
 }
 

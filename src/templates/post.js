@@ -1,26 +1,18 @@
 import React from 'react'
-import {graphql} from 'gatsby'
-import Img from 'gatsby-image'
-import MDXRenderer from 'gatsby-plugin-mdx/mdx-renderer'
+import {graphql, Link} from 'gatsby'
+import {GatsbyImage, getImage} from 'gatsby-plugin-image'
 import SEO from 'components/seo'
-import {css} from '@emotion/core'
+import {css} from '@emotion/react'
 import Container from 'components/container'
 import Layout from 'components/layout'
 import Share from 'components/share'
-import SubscribeForm, {TinyLetterSubscribe} from 'components/forms/subscribe'
-import BlogPostFooter from 'components/blog-post-footer'
-import Markdown from 'react-markdown'
-import {fonts} from '../lib/typography'
+import theme from '../../config/theme'
 import config from '../../config/website'
 import {bpMaxSM} from '../lib/breakpoints'
 import get from 'lodash/get'
 
-// to add back workshop tickets check to the page, check this commit where
-// that was removed: c94057d
-
-export default function PostPage({data: {site, mdx}}) {
+export default function PostPage({data: {site, mdx}, children}) {
   const {
-    isWriting,
     editLink,
     historyLink,
     title,
@@ -29,125 +21,325 @@ export default function PostPage({data: {site, mdx}}) {
     description,
     banner,
     bannerCredit,
-    noFooter,
+    categories,
   } = mdx.fields
 
   const blogPostUrl = `${config.siteUrl}${slug}`
+  const bannerImage = banner ? getImage(banner) : null
 
   return (
     <Layout
       site={site}
       frontmatter={mdx.fields}
-      headerLink={isWriting ? '/writing/blog' : '/blog'}
-      noFooter={noFooter}
-      subscribeForm={isWriting ? <TinyLetterSubscribe /> : <SubscribeForm />}
+      headerLink="/blog"
+      noFooter={false}
     >
       <SEO
         frontmatter={mdx.fields}
-        metaImage={get(mdx, 'fields.banner.childImageSharp.fluid.src')}
+        metaImage={get(
+          mdx,
+          'fields.banner.childImageSharp.gatsbyImageData.images.fallback.src'
+        )}
         isBlogPost
       />
-      <article
+
+      {/* Article Header */}
+      <header
         css={css`
-          width: 100%;
-          display: flex;
-          twitter-widget {
-            margin-left: auto;
-            margin-right: auto;
+          background: ${theme.colors.dark};
+          padding: 64px 0;
+          ${bpMaxSM} {
+            padding: 40px 0;
           }
         `}
       >
-        <Container
-          css={css`
-            padding-top: 20px;
-          `}
-        >
+        <Container maxWidth={720}>
+          {/* Categories */}
+          {categories && categories.length > 0 && (
+            <div
+              css={css`
+                margin-bottom: 16px;
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+              `}
+            >
+              {categories.map(cat => (
+                <span
+                  key={cat}
+                  css={css`
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 4px 10px;
+                    background: rgba(253, 186, 116, 0.15);
+                    color: ${theme.colors.orange};
+                    font-size: 12px;
+                    font-weight: 500;
+                    border-radius: ${theme.radii.full};
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
+                  `}
+                >
+                  {cat}
+                </span>
+              ))}
+            </div>
+          )}
+
           <h1
             css={css`
-              text-align: center;
-              margin-bottom: 20px;
-              margin-top: 0;
-              font-family: ${fonts.light};
+              color: ${theme.colors.white};
+              font-size: 2.25rem;
+              font-weight: 700;
+              letter-spacing: -0.025em;
+              line-height: 1.2;
+              margin: 0 0 16px 0;
+              ${bpMaxSM} {
+                font-size: 1.75rem;
+              }
             `}
           >
             {title}
           </h1>
-          {banner && (
+
+          {description && (
+            <p
+              css={css`
+                color: ${theme.colors.textSubtle};
+                font-size: 1.125rem;
+                line-height: 1.6;
+                margin: 0 0 24px 0;
+              `}
+            >
+              {description.replace(/^_|_$/g, '')}
+            </p>
+          )}
+
+          <div
+            css={css`
+              display: flex;
+              align-items: center;
+              gap: 16px;
+              color: ${theme.colors.textSubtle};
+              font-size: 14px;
+            `}
+          >
+            <time
+              css={css`
+                font-family: ${theme.fonts.mono};
+              `}
+            >
+              {date}
+            </time>
+            <span>·</span>
+            <span>Khoa Le</span>
+          </div>
+        </Container>
+      </header>
+
+      {/* Banner Image */}
+      {bannerImage && (
+        <div
+          css={css`
+            background: ${theme.colors.surfaceAlt};
+            padding: 24px 0;
+          `}
+        >
+          <Container maxWidth={900}>
             <div
               css={css`
-                text-align: center;
+                border-radius: ${theme.radii.lg};
+                overflow: hidden;
+                box-shadow: ${theme.shadows.lg};
+              `}
+            >
+              <GatsbyImage
+                image={bannerImage}
+                alt={title}
+                css={css`
+                  width: 100%;
+                `}
+              />
+            </div>
+            {bannerCredit && (
+              <p
+                css={css`
+                  text-align: center;
+                  font-size: 12px;
+                  color: ${theme.colors.textMuted};
+                  margin-top: 12px;
+                `}
+                dangerouslySetInnerHTML={{__html: bannerCredit}}
+              />
+            )}
+          </Container>
+        </div>
+      )}
 
-                p {
-                  margin-bottom: 0;
-                }
-                ${bpMaxSM} {
-                  padding: 0;
+      {/* Article Content */}
+      <article
+        css={css`
+          padding: 48px 0;
+        `}
+      >
+        <Container maxWidth={720}>
+          <div
+            css={css`
+              font-size: 1.0625rem;
+              line-height: 1.8;
+              color: ${theme.colors.text};
+
+              h2 {
+                margin-top: 48px;
+                margin-bottom: 16px;
+                font-size: 1.5rem;
+                font-weight: 600;
+                color: ${theme.colors.text};
+              }
+
+              h3 {
+                margin-top: 32px;
+                margin-bottom: 12px;
+                font-size: 1.25rem;
+                font-weight: 600;
+              }
+
+              p {
+                margin-bottom: 24px;
+              }
+
+              ul,
+              ol {
+                margin-bottom: 24px;
+                padding-left: 24px;
+              }
+
+              li {
+                margin-bottom: 8px;
+              }
+
+              img {
+                border-radius: ${theme.radii.default};
+              }
+
+              pre {
+                margin: 32px 0;
+              }
+            `}
+          >
+            {children}
+          </div>
+        </Container>
+      </article>
+
+      {/* Article Footer */}
+      <footer
+        css={css`
+          border-top: 1px solid ${theme.colors.border};
+          padding: 32px 0;
+          background: ${theme.colors.surfaceAlt};
+        `}
+      >
+        <Container maxWidth={720}>
+          <div
+            css={css`
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              flex-wrap: wrap;
+              gap: 16px;
+              margin-bottom: 24px;
+            `}
+          >
+            <a
+              href={historyLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              css={css`
+                font-size: 12px;
+                font-family: ${theme.fonts.mono};
+                color: ${theme.colors.textMuted};
+                &:hover {
+                  color: ${theme.colors.orangeDark};
                 }
               `}
             >
-              <Img
-                fluid={banner.childImageSharp.fluid}
-                alt={site.siteMetadata.keywords.join(', ')}
-              />
-              {bannerCredit ? <Markdown>{bannerCredit}</Markdown> : null}
+              Last updated: {date}
+            </a>
+
+            <div
+              css={css`
+                display: flex;
+                gap: 16px;
+                font-size: 14px;
+              `}
+            >
+              <a
+                target="_blank"
+                rel="noopener noreferrer"
+                href={`https://twitter.com/search?q=${encodeURIComponent(
+                  blogPostUrl
+                )}`}
+              >
+                Discuss on Twitter
+              </a>
+              <a target="_blank" rel="noopener noreferrer" href={editLink}>
+                Edit on GitHub
+              </a>
             </div>
-          )}
-          <br />
-          {description ? <Markdown>{description}</Markdown> : null}
-          <MDXRenderer>{mdx.body}</MDXRenderer>
+          </div>
+
+          <Share
+            url={blogPostUrl}
+            title={title}
+            twitterHandle={config.twitterHandle}
+          />
+
+          <div
+            css={css`
+              margin-top: 32px;
+              text-align: center;
+            `}
+          >
+            <Link
+              to="/blog"
+              css={css`
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 24px;
+                background: ${theme.colors.dark};
+                color: ${theme.colors.white} !important;
+                font-size: 14px;
+                font-weight: 500;
+                border-radius: ${theme.radii.default};
+                transition: ${theme.transition.fast};
+                &:hover {
+                  background: #1e293b;
+                }
+              `}
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back to Blog
+            </Link>
+          </div>
         </Container>
-        {/* <SubscribeForm /> */}
-      </article>
-      <Container noVerticalPadding>
-        <a href={historyLink}>
-          <time
-            css={{
-              textAlign: 'right',
-              display: 'block',
-              fontSize: '12px',
-              marginBottom: '10px',
-            }}
-            title="Last Updated Date"
-          >
-            {date}
-          </time>
-        </a>
-      </Container>
-      <Container noVerticalPadding>
-        <p css={{textAlign: 'right'}}>
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
-            // using mobile.twitter.com because if people haven't upgraded
-            // to the new experience, the regular URL wont work for them
-            href={`https://mobile.twitter.com/search?q=${encodeURIComponent(
-              blogPostUrl,
-            )}`}
-          >
-            Discuss on Twitter
-          </a>
-          <span css={{marginLeft: 10, marginRight: 10}}>{` • `}</span>
-          <a target="_blank" rel="noopener noreferrer" href={editLink}>
-            Edit post on GitHub
-          </a>
-        </p>
-      </Container>
-      <Container noVerticalPadding css={{marginBottom: 40}}>
-        <Share
-          url={blogPostUrl}
-          title={title}
-          twitterHandle={config.twitterHandle}
-        />
-      </Container>
-      <Container>
-        <BlogPostFooter />
-      </Container>
+      </footer>
     </Layout>
   )
 }
 
 export const pageQuery = graphql`
-  query($id: String!) {
+  query ($id: String!) {
     site {
       siteMetadata {
         keywords
@@ -159,19 +351,25 @@ export const pageQuery = graphql`
         historyLink
         isWriting
         title
-        date
+        date(formatString: "MMMM DD, YYYY")
         noFooter
         description
         plainTextDescription
         author
         banner {
-          ...bannerImage720
+          childImageSharp {
+            gatsbyImageData(
+              width: 900
+              placeholder: BLURRED
+              formats: [AUTO, WEBP, AVIF]
+            )
+          }
         }
         bannerCredit
         slug
         keywords
+        categories
       }
-      body
     }
   }
 `

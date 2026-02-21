@@ -1,40 +1,47 @@
 import React from 'react'
 import Search from 'components/search'
 import {useStaticQuery, graphql} from 'gatsby'
+import Layout from 'components/layout'
 
 function BlogScreen() {
   const result = useStaticQuery(
     graphql`
       query {
         blogposts: allMdx(
-          sort: {fields: frontmatter___date, order: DESC}
+          sort: {frontmatter: {date: DESC}}
           filter: {
             frontmatter: {published: {ne: false}}
-            fileAbsolutePath: {regex: "//content/blog//"}
+            internal: {contentFilePath: {regex: "//content/blog//"}}
           }
         ) {
-          edges {
-            node {
-              fields {
-                id
-                slug
-                productionUrl
-                title
-                categories
-                keywords
-                description: plainTextDescription
-                banner {
-                  ...bannerImage260
-                }
+          nodes {
+            fields {
+              id
+              slug
+              productionUrl
+              title
+              categories
+              keywords
+              description: plainTextDescription
+              banner {
+                ...bannerImage260
               }
-              excerpt(pruneLength: 190)
             }
+            excerpt(pruneLength: 190)
           }
         }
       }
     `,
   )
-  return <Search blogposts={result.blogposts} />
+  // Transform nodes to edges format for Search component compatibility
+  const blogposts = {
+    edges: result.blogposts.nodes.map(node => ({node}))
+  }
+  return (
+    <Layout headerLink="/">
+      <Search blogposts={blogposts} />
+    </Layout>
+  )
 }
 
 export default BlogScreen

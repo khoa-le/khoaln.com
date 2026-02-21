@@ -7,34 +7,36 @@ function BlogScreen() {
     graphql`
       query {
         blogposts: allMdx(
-          sort: {fields: frontmatter___date, order: DESC}
+          sort: {frontmatter: {date: DESC}}
           filter: {
             frontmatter: {published: {ne: false}}
-            fileAbsolutePath: {regex: "//content/writing-blog//"}
+            internal: {contentFilePath: {regex: "//content/writing-blog//"}}
           }
         ) {
-          edges {
-            node {
-              fields {
-                id
-                slug
-                productionUrl
-                title
-                categories
-                keywords
-                description: plainTextDescription
-                banner {
-                  ...bannerImage260
-                }
+          nodes {
+            fields {
+              id
+              slug
+              productionUrl
+              title
+              categories
+              keywords
+              description: plainTextDescription
+              banner {
+                ...bannerImage260
               }
-              excerpt(pruneLength: 190)
             }
+            excerpt(pruneLength: 190)
           }
         }
       }
     `,
   )
-  return <Search blogposts={result.blogposts} />
+  // Transform nodes to edges format for Search component compatibility
+  const blogposts = {
+    edges: result.blogposts.nodes.map(node => ({node}))
+  }
+  return <Search blogposts={blogposts} />
 }
 
 export default BlogScreen

@@ -1,154 +1,149 @@
 import React from 'react'
-import Link from './link'
-import {css} from '@emotion/core'
-import styled from '@emotion/styled'
-import theme from '../../config/theme'
-import {fonts} from '../lib/typography'
-import MobileNav from './mobile-nav'
+import {Link} from 'gatsby'
+import {css} from '@emotion/react'
 import Container from './container'
+import theme from '../../config/theme'
+import MobileNav from './mobile-nav'
 import {bpMaxSM} from '../lib/breakpoints'
-import {lighten} from 'polished'
 
-function HeaderLink({headerColor, activeClassName = 'active', ...props}) {
-  return (
-    <Link
-      activeClassName={activeClassName}
-      partiallyActive={true}
-      css={{
-        textDecoration: 'none',
-        color: headerColor ? headerColor : theme.colors.body_color,
-        '&:hover,&:focus': {
-          background:
-            headerColor === theme.colors.white
-              ? 'rgba(40, 28, 77, 0.3)'
-              : lighten(0.4, theme.brand.primary),
-          color:
-            headerColor === theme.colors.white
-              ? 'white'
-              : theme.colors.link_color_hover,
-        },
-        '&.active': {
-          background:
-            headerColor === theme.colors.white
-              ? 'rgba(40, 28, 77, 0.3)'
-              : lighten(0.4, theme.brand.primary),
-        },
-      }}
-      {...props}
-    />
-  )
-}
-
-const NavLink = styled(HeaderLink)({
-  padding: '8px 10px',
-  borderRadius: '3px',
-  background: 'transparent',
-  '& + &': {marginLeft: 10},
-  [bpMaxSM]: {
-    display: 'none',
-  },
-})
-
-function Header({
-  dark,
-  bgColor = 'none',
-  siteTitle,
-  headerLink = '/',
-  headerColor = 'black',
-  fixed = false,
-  headerImage = false,
-  maxWidth = 720,
-}) {
+function Header({siteTitle = 'Khoa Le', headerLink = '/'}) {
   return (
     <header
       css={css`
-        width: 100%;
-        flex-shrink: 0;
-        background: none;
-        padding: 30px 0 0 0;
-        ${bpMaxSM} {
-          padding: 35px 0 0 0;
-        }
-        background: ${dark ? '#090909' : `${bgColor}` || 'none'};
-        z-index: 10;
-        position: ${fixed ? 'fixed' : 'absolute'};
+        background: ${theme.colors.dark};
+        position: sticky;
         top: 0;
-        font-family: ${fonts.light};
+        z-index: 50;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       `}
     >
-      <Container maxWidth={maxWidth} noVerticalPadding>
-        <nav
-          css={{
-            width: '100%',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
+      <Container
+        maxWidth={1280}
+        noVerticalPadding
+        css={css`
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          height: 56px;
+          padding-top: 0;
+          padding-bottom: 0;
+        `}
+      >
+        {/* Logo */}
+        <Link
+          to={headerLink}
+          aria-label="Go home"
+          css={css`
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: ${theme.colors.white};
+            text-decoration: none;
+            &:hover {
+              color: ${theme.colors.white};
+            }
+          `}
         >
-          <HeaderLink
-            to={headerLink}
-            aria-label="go to homepage"
-            activeClassName="none"
-            headerColor={headerColor}
-            css={{
-              position: 'relative',
-              fontFamily: fonts.regular,
-              display: 'flex',
-              alignItems: 'center',
-              img: {
-                marginBottom: 0,
-                maxWidth: '50px',
-                position: 'absolute',
-                borderRadius: '100%',
-                background:
-                  headerColor === '#fff' ? 'rgba(40, 28, 77, 0.7)' : '#f1f1f1',
-              },
-              ':hover, :focus': {
-                background: 'transparent',
-              },
-              span: {
-                transform: headerImage && 'translateX(60px)',
-              },
-            }}
-          >
-            {headerImage }{' '}
-            <span>{siteTitle}</span>
-          </HeaderLink>
           <div
             css={css`
-              font-size: 16px;
-              line-height: 1.25;
+              width: 32px;
+              height: 32px;
+              background: ${theme.colors.orange};
+              border-radius: ${theme.radii.default};
               display: flex;
               align-items: center;
-              .mobile-nav {
+              justify-content: center;
+            `}
+          >
+            <span
+              css={css`
+                color: ${theme.colors.orangeDark};
+                font-family: ${theme.fonts.mono};
+                font-weight: 700;
+                font-size: 14px;
+              `}
+            >
+              KL
+            </span>
+          </div>
+          <span
+            css={css`
+              font-weight: 600;
+              font-size: 14px;
+              ${bpMaxSM} {
                 display: none;
-                visibility: hidden;
-                ${bpMaxSM} {
-                  display: block;
-                  visibility: visible;
-                }
               }
             `}
           >
-            <MobileNav color={headerColor} />
-            <NavLink
-              headerColor={headerColor}
-              to="/blog/"
-              aria-label="View blog page"
-            >
-              Blog
-            </NavLink>
-            <NavLink
-              headerColor={headerColor}
-              to="/about/"
-              aria-label="View about page"
-            >
-              About
-            </NavLink>
-          </div>
+            {siteTitle}
+          </span>
+        </Link>
+
+        {/* Desktop Navigation */}
+        <nav
+          css={css`
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            ${bpMaxSM} {
+              display: none;
+            }
+          `}
+        >
+          <NavLink to="/blog" activeClassName="active">
+            Blog
+          </NavLink>
+          <NavLink to="/about" activeClassName="active">
+            About
+          </NavLink>
         </nav>
+
+        {/* Mobile Navigation */}
+        <div
+          css={css`
+            display: none;
+            ${bpMaxSM} {
+              display: block;
+            }
+          `}
+        >
+          <MobileNav color={theme.colors.white} />
+        </div>
       </Container>
     </header>
+  )
+}
+
+function NavLink({to, children, activeClassName, ...props}) {
+  return (
+    <Link
+      to={to}
+      activeClassName={activeClassName}
+      css={css`
+        display: inline-flex;
+        align-items: center;
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: 500;
+        color: ${theme.colors.textSubtle};
+        border-radius: 6px;
+        transition: ${theme.transition.fast};
+        text-decoration: none;
+
+        &:hover {
+          color: ${theme.colors.white};
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        &.active {
+          color: ${theme.colors.orange};
+          background: rgba(255, 255, 255, 0.1);
+        }
+      `}
+      {...props}
+    >
+      {children}
+    </Link>
   )
 }
 
