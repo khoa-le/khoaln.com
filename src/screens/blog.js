@@ -22,6 +22,7 @@ function BlogScreen() {
               title
               categories
               keywords
+              date(formatString: "MMM DD, YYYY")
               description: plainTextDescription
               banner {
                 ...bannerImage260
