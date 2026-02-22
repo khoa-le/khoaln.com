@@ -4,17 +4,8 @@ import {Link as RouterLink} from 'gatsby'
 import {GatsbyImage, getImage} from 'gatsby-plugin-image'
 import {rankings as matchSorterRankings} from 'match-sorter'
 import theme from '../../../config/theme'
-import MatchSorterWorker from './match-sorter.worker'
+import {searchAndSort} from './match-sorter.worker'
 import Container from '../container'
-
-let matchSorterWorker
-
-function getMatchSorterWorker() {
-  if (!matchSorterWorker) {
-    matchSorterWorker = new MatchSorterWorker()
-  }
-  return matchSorterWorker
-}
 
 function BlogPostCard({blogpost}) {
   const {slug, productionUrl, title, description, keywords, banner} = blogpost
@@ -221,8 +212,7 @@ function Search(props) {
       setFilteredBlogPosts(blogposts)
       return
     }
-    getMatchSorterWorker()
-      .searchAndSort(blogposts, search, {
+    Promise.resolve(searchAndSort(blogposts, search, {
         keys: [
           {
             key: 'title',
@@ -244,7 +234,7 @@ function Search(props) {
             maxRanking: matchSorterRankings.CONTAINS,
           },
         ],
-      })
+      }))
       .then(
         results => setFilteredBlogPosts(results),
         error => {
