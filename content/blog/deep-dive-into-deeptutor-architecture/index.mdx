@@ -39,15 +39,20 @@ This separation allows the system to first deeply understand the problem space b
 
 ### Technology Stack
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | Next.js 16, React 19, Tailwind CSS |
-| **Backend** | FastAPI, Uvicorn, Python 3.11+ |
-| **LLM** | kimi-k2.5:cloud (via Ollama) |
-| **Embeddings** | Jina AI (jina-embeddings-v3) |
-| **Database** | SQLite (with optional PostgreSQL) |
-| **Knowledge Graph** | LightRAG |
-| **Vector Store** | FAISS |
+<table>
+<thead>
+<tr><th>Layer</th><th>Technology</th></tr>
+</thead>
+<tbody>
+<tr><td>**Frontend**</td><td>Next.js 16, React 19, Tailwind CSS</td></tr>
+<tr><td>**Backend**</td><td>FastAPI, Uvicorn, Python 3.11+</td></tr>
+<tr><td>**LLM**</td><td>kimi-k2.5:cloud (via Ollama)</td></tr>
+<tr><td>**Embeddings**</td><td>Jina AI (jina-embeddings-v3)</td></tr>
+<tr><td>**Database**</td><td>SQLite (with optional PostgreSQL)</td></tr>
+<tr><td>**Knowledge Graph**</td><td>LightRAG</td></tr>
+<tr><td>**Vector Store**</td><td>FAISS</td></tr>
+</tbody>
+</table>
 
 The codebase spans approximately **53,646 lines** of Python/YAML across **222 Python files** — substantial for an educational AI system.
 
@@ -128,13 +133,18 @@ The Next.js 16 frontend is built with:
 
 ### Key UI Components
 
-| Component | Purpose |
-|-----------|---------|
-| `ChatInterface` | Main conversation window |
-| `AgentSelector` | Switch between tutor modes |
-| `KnowledgeGraph` | Visual concept map |
-| `ProgressTracker` | Learning analytics |
-| `NotebookPanel` | Note-taking interface |
+<table>
+<thead>
+<tr><th>Component</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td>`ChatInterface`</td><td>Main conversation window</td></tr>
+<tr><td>`AgentSelector`</td><td>Switch between tutor modes</td></tr>
+<tr><td>`KnowledgeGraph`</td><td>Visual concept map</td></tr>
+<tr><td>`ProgressTracker`</td><td>Learning analytics</td></tr>
+<tr><td>`NotebookPanel`</td><td>Note-taking interface</td></tr>
+</tbody>
+</table>
 
 ## Backend API Structure
 
@@ -145,22 +155,22 @@ The FastAPI backend exposes RESTful endpoints:
 @router.post("/chat")
 async def chat(message: ChatMessage, session_id: str):
     """Main chat endpoint with streaming support"""
-    ...
+    pass
 
 @router.post("/agents/{agent_type}/invoke")
 async def invoke_agent(agent_type: str, request: AgentRequest):
     """Direct agent communication"""
-    ...
+    pass
 
 @router.get("/knowledge-graph/{concept}")
 async def get_concept_graph(concept: str):
     """Retrieve related concepts"""
-    ...
+    pass
 
 @router.post("/upload/document")
 async def upload_document(file: UploadFile):
     """Process learning materials"""
-    ...
+    pass
 ```
 
 ## RAG Pipeline Flow
@@ -204,7 +214,7 @@ VECTOR_STORE_PATH=./data/vectors
 KNOWLEDGE_GRAPH_PATH=./data/kg
 
 # Optional: PostgreSQL for production
-DATABASE_URL=postgresql://..."
+DATABASE_URL=postgresql://...
 ```
 
 ### Local Development Setup
@@ -246,13 +256,18 @@ npm start  # Production server on port 3000
 
 ## Comparison with Similar Systems
 
-| Feature | DeepTutor | Khanmigo | Duolingo Max |
-|---------|-----------|----------|--------------|
-| Open Source | ✅ | ❌ | ❌ |
-| Multi-Agent | ✅ | ❌ | ❌ |
-| Knowledge Graph | ✅ | ❌ | ❌ |
-| Local LLM | ✅ | ❌ | ❌ |
-| Cost | Usage-based | Free/Paid | Subscription |
+<table>
+<thead>
+<tr><th>Feature</th><th>DeepTutor</th><th>Khanmigo</th><th>Duolingo Max</th></tr>
+</thead>
+<tbody>
+<tr><td>Open Source</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Multi-Agent</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Knowledge Graph</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Local LLM</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Cost</td><td>Usage-based</td><td>Free/Paid</td><td>Subscription</td></tr>
+</tbody>
+</table>
 
 ## Key Takeaways
 
