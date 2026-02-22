@@ -35,9 +35,10 @@ function BlogScreen() {
     `,
   )
   // Transform nodes to edges format for Search component compatibility
-  const blogposts = {
+  // Guard for SSR/hydration when data might not be ready yet
+  const blogposts = result?.blogposts?.nodes ? {
     edges: result.blogposts.nodes.map(node => ({node}))
-  }
+  } : { edges: [] }
   return (
     <Layout headerLink="/">
       <Search blogposts={blogposts} />
