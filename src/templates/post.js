@@ -259,6 +259,18 @@ const proseStyles = css`
     border-top: 1px solid ${theme.colors.border};
     margin: 3rem 0;
   }
+  /* Wrap tables in scrollable container on mobile */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 2rem 0;
+    border: 1px solid ${theme.colors.border};
+    border-radius: ${theme.radii.default};
+  }
+  .table-wrapper table {
+    margin: 0;
+    border: none;
+  }
   table {
     width: 100%;
     border-collapse: collapse;
@@ -267,6 +279,8 @@ const proseStyles = css`
     border: 1px solid ${theme.colors.border};
     border-radius: ${theme.radii.default};
     overflow: hidden;
+    display: table;
+    min-width: 500px;
   }
   th {
     background: ${theme.colors.surfaceAlt};
