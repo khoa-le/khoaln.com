@@ -1,0 +1,198 @@
+---
+slug: 'building-team-resource-manager'
+title: 'Building Team Resource Manager: From Spreadsheets to Real-Time Capacity Planning'
+date: '2026-02-20'
+author: 'Khoa Le'
+description: 'How we replaced Google Sheets with a custom Laravel resource management system for a 15-person engineering team across 6 Asian branches.'
+categories:
+  - 'laravel'
+  - 'vue-js'
+  - 'engineering-management'
+keywords:
+  - 'resource management'
+  - 'capacity planning'
+  - 'laravel'
+  - 'vue-js'
+  - 'engineering teams'
+  - 'team management'
+  - 'open source'
+published: true
+---
+
+*How we replaced Google Sheets with a custom Laravel resource management system for a 15-person engineering team across 6 Asian branches.*
+
+---
+
+## The Problem
+
+Managing engineering resources across multiple offices shouldn't require a PhD in spreadsheet gymnastics. Yet that's exactly where we found ourselves — tracking 15 developers across 6 branches using nothing but Google Sheets and hope.
+
+Our team, split between Japan, Vietnam, Singapore, and other Asian offices, was drowning in the gap between "who's available" and "who's actually working on what." The spreadsheets weren't just inconvenient — they were silently hiding over-allocation disasters, manual data entry errors, and zero visibility into upcoming capacity crunches.
+
+**The breaking points:**
+- Developers assigned 150%+ capacity across overlapping projects
+- "Spot" projects (urgent, fixed-deadline work) mixed with ongoing retainer work with no distinction
+- Slack questions like "is anyone free next week?" eating hours of management time
+- Zero mobile access — try using a spreadsheet on your phone during a client call
+
+We needed something better. So we built it.
+
+---
+
+## What We Built
+
+**Team Resource Manager** is an open-source capacity planning platform built with Laravel 11, Vue.js 3, and Inertia.js. It handles developer assignments, project tracking, capacity forecasting, and Slack integration — all with a mobile-first design that actually works on phones.
+
+### Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Backend | Laravel 11 + Inertia.js |
+| Frontend | Vue.js 3 + TailwindCSS |
+| Database | SQLite (dev) / MySQL (production) |
+| Design System | Turbopuffer (custom CSS variables) |
+| Charts | Chart.js for capacity forecasting |
+| Testing | PHPUnit (150+ tests, 699 assertions) |
+| Bot Testing | CLI-first (`php artisan bot:test`) — no Slack required |
+
+---
+
+## Key Features & Design Decisions
+
+### 1. Over-Allocation Is Allowed (With Warnings)
+
+Traditional resource tools block you from assigning developers past 100% capacity. We deliberately rejected this approach.
+
+**Why?** Because in the real world, you sometimes need 150% allocation for short periods. A developer might be wrapping up one project at 50% while ramping up another 80%. Blocking this creates artificial constraints.
+
+Instead, we built **tiered warnings:**
+
+- 🟢 **Ok** (≤100%): Smooth sailing
+- 🟡 **Warning** (100-120%): Proceed with caution
+- 🔴 **Danger** (>120%): Flag for immediate review
+
+The system creates the assignment in all cases — it just warns appropriately. This respects operational reality while maintaining visibility.
+
+---
+
+### 2. Project Types: Regular vs Spot
+
+Not all projects are equal. We split them into two distinct types with different date semantics:
+
+**Regular projects** have *proposed* dates — flexible, planning-phase timing that can shift.
+
+**Spot projects** have *committed* start and end dates — hard deadlines, often client-driven, with a ⚡ visual indicator in the UI.
+
+This lets us forecast differently. Spot projects are non-negotiable blocks of time. Regular projects are movable. The capacity forecast shows spot hours separately, so you can see exactly how much flexibility you have.
+
+---
+
+### 3. Master Data Management (Database-Driven Config)
+
+Hardcoded enums are a maintenance nightmare. We replaced every dropdown with database tables:
+
+- `master_roles` (frontend, backend, fullstack, devops, PM, QC)
+- `master_levels` (junior, mid, senior, lead)
+- `master_project_statuses` (proposed, confirmed, active, completed, on_hold)
+- `master_priorities` (low, medium, high, urgent)
+- `master_clients` (client list for project creation)
+- `master_project_types` (regular, spot)
+
+**Why this matters:** Non-technical admins can add new roles, statuses, or clients without touching code. Validations dynamically pull from these tables, so the system stays configurable.
+
+**Caching strategy:** 1-hour TTL with auto-clear on any master data update.
+
+---
+
+### 4. CLI-Testable Slack Bot
+
+We built a Slack bot for common queries: `/assign`, `/whoisfree`, `/myschedule`, `/projects`. But waiting for Slack approval to test bot commands is painful.
+
+**Solution:** Every bot command is testable via CLI:
+
+```bash
+# Test the assign command without Slack
+php artisan bot:test assign \
+  --args="Le Ba Hung|AEC|backend" \
+  --user=admin \
+  --dry-run
+```
+
+The `--args` parameter uses pipe separators so multi-word names don't break. `--dry-run` wraps everything in a transaction and rolls back, so you can test without polluting the database.
+
+---
+
+### 5. Mobile-First Responsive Design
+
+Engineering managers check capacity on their phones during commutes, client calls, and off-hours. We audited every page at 375px–390px widths (iPhone SE/14 sizes) and fixed 7 critical mobile issues:
+
+1. **Projects meta grid** — replaced `divide-x` with conditional `nth-child` borders
+2. **Capacity 5-card grid** — removed broken `md:grid-cols-3` breakpoint
+3. **Assignment "Copied from" banner** — stacks vertically on mobile
+4. **Forecast chart legend** — wraps below title on narrow screens
+5. **Forms with dual columns** — single column below 640px
+6. **Flash messages** — long warnings wrap with `break-words`
+7. **Project type radio cards** — full width on mobile
+
+**Verification:** Puppeteer screenshot automation at 4 breakpoints — 24 screenshots, zero horizontal overflow warnings.
+
+---
+
+### 6. Capacity Forecasting with Charts
+
+The forecast page shows 12-week weekly or 6-month monthly views:
+
+- **Frontend vs Backend split** — capacity and utilization tracked separately
+- **Spot vs Ongoing hours** — stacked in charts to show committed vs flexible work
+- **Over-allocation indicators** — red badges when utilization >100%
+
+---
+
+## Architecture Highlights
+
+### Constants Over Magic Numbers
+
+We extracted all scheduling constants into a `HasWorkScheduleConstants` trait:
+
+```php
+protected const WORK_HOURS_PER_DAY = 8;
+protected const WORK_DAYS_PER_WEEK = 5;
+protected const HOURS_PER_WEEK = 40;
+protected const ALLOCATION_WARNING_THRESHOLD = 100;
+protected const ALLOCATION_DANGER_THRESHOLD = 120;
+```
+
+This eliminates magic numbers like `* 5 * 8` scattered through forecasting calculations.
+
+---
+
+### Defensive Coding
+
+**Lazy loading protection:** Laravel's `Model::preventLazyLoading()` caught a missing `->with('developer')` during a refactor — we fixed it immediately with eager loading.
+
+**Infinite recursion guard:** Added `$depth` parameter to prevent runaway recursion in capacity suggestion logic.
+
+---
+
+## Testing Strategy
+
+We wrote 150+ tests covering:
+
+- **Unit:** Services, traits, and models
+- **Feature:** HTTP endpoints, form submissions, over-allocation flows
+- **Mobile:** Puppeteer screenshot automation at 4 breakpoints
+- **Regression:** Specific bugs have dedicated tests
+
+All tests pass with `--no-coverage` in ~60 seconds on a modest VM.
+
+---
+
+## Open Source & Hiring
+
+Team Resource Manager is open-source.
+
+**Want something similar?** We build custom resource management and capacity planning tools for engineering teams. If you're drowning in spreadsheets and need real-time visibility into who's working on what, let's talk.
+
+---
+
+*Built with Laravel, Vue.js, and excessive amounts of coffee by a distributed team across Asia.*
