@@ -1,0 +1,398 @@
+---
+slug: 'setting-up-multiple-agent-roles-in-claude-code'
+title: 'Setting Up Multiple Agent Roles in Claude Code'
+date: '2026-03-10'
+author: 'Khoa Le'
+description: 'A comprehensive guide on setting up multiple agent roles (developer, tester, technical lead, PM) in Claude Code using subagents, agent teams, and skills.'
+categories:
+  - 'ai'
+  - 'claude'
+keywords:
+  - 'claude-code'
+  - 'agents'
+  - 'subagents'
+  - 'llm'
+published: true
+---
+
+Based on the official Claude Code documentation, here is a comprehensive guide on setting up multiple agent roles.
+
+## Overview: Setting Up Multiple Agent Roles in Claude Code
+
+There are three primary approaches to create different roles (developer, tester, technical lead, PM) in Claude Code:
+
+### 1. Subagents (Recommended for most workflows)
+
+Subagents are specialized AI assistants that each run in isolated contexts with custom system prompts, tool restrictions, and permissions. This is the most flexible and practical approach for role-based workflows.
+
+**Key features:**
+- Each subagent has its own context window
+- Custom system prompt for each role
+- Tool restrictions (e.g., tester gets test tools, PM gets read-only access)
+- Custom permissions per role
+- Can use hooks for role-specific automation
+- Automatic delegation based on task type
+
+**Where to store:**
+- `.claude/agents/` — project-level roles (check into Git, share with team)
+- `~/.claude/agents/` — personal roles (all projects)
+- Via CLI flag — session-specific roles
+
+#### Example: Creating a tester role subagent
+
+Create `.claude/agents/tester/SKILL.md`:
+
+```yaml
+---
+name: tester
+description: Testing specialist for running tests, debugging failures, and validating fixes. Use proactively when encountering any failures.
+tools: Bash, Read, Grep, Glob
+model: sonnet
+---
+```
+
+You are a quality assurance specialist focused on testing and validation.
+
+**When invoked:**
+1. Run the test suite and capture failures
+2. Isolate failures in the simplest reproducible case
+3. Provide root cause analysis
+4. Suggest fixes with testing approach
+5. Verify solution doesn't break other tests
+
+**Testing workflow:**
+- Run full test suite
+- Check for test coverage
+- Analyze error messages and stack traces
+- Propose minimal reproducible test case
+- Validate fix prevents regression
+
+**For each failure, provide:**
+- Root cause explanation
+- Evidence (logs, stack traces)
+- Test reproduction steps
+- Validation approach
+
+#### Creating multiple role subagents:
+
+Use `/agents` command to create them interactively:
+
+```bash
+claude
+/agents
+# Create new agent → User-level → Generate with Claude
+# Describe each role and Claude generates the system prompt
+```
+
+Or create them manually in `.claude/agents/`:
+- `.claude/agents/developer/`
+- `.claude/agents/tester/`
+- `.claude/agents/technical-lead/`
+- `.claude/agents/pm/`
+
+### 2. Agent Teams (For parallel, coordinated work)
+
+Agent teams allow multiple Claude instances to work together in parallel, each with distinct responsibilities. One session acts as the "lead" coordinating the others.
+
+**Best for:**
+- Parallel code review (security reviewer, performance reviewer, test coverage reviewer)
+- Cross-functional investigations (frontend, backend, architecture)
+- Competing hypotheses (multiple theories tested simultaneously)
+
+**Enable agent teams:**
+
+Add to `settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+**Create a team with multiple roles:**
+
+Create an agent team to review this PR from different perspectives:
+- One teammate focused on security implications
+- One checking performance impact
+- One validating test coverage
+Have them each review and report findings.
+
+Each teammate gets its own context window and can communicate directly with others.
+
+### 3. Skills (For reusable role-based workflows)
+
+Skills are prompt-based instructions that Claude applies contextually. Create role-specific skills that encode the mindset and workflows of each role.
+
+#### Example: PM-focused skill
+
+Create `~/.claude/skills/product-review/SKILL.md`:
+
+```yaml
+---
+name: product-review
+description: Product manager review focused on requirements, user impact, and business value. Use when evaluating features or design decisions.
+disable-model-invocation: false
+allowed-tools: Read, Grep, Glob
+---
+```
+
+You are a product manager reviewing this change.
+
+**Focus on:**
+1. Does this meet the requirements?
+2. What's the impact on users?
+3. Are there edge cases we're missing?
+4. Does this align with the roadmap?
+5. What's the business value?
+
+**Provide feedback organized by:**
+- Alignment with requirements
+- User impact assessment
+- Risk/edge cases
+- Questions for the team
+- Recommendation
+
+---
+
+## Recommended Setup: Multi-Role Workflow
+
+Here's a practical setup for your YAMAZEN CMS project:
+
+**Project structure:**
+```text
+.claude/
+└── agents/
+    ├── developer/
+    │   └── SKILL.md
+    ├── tester/
+    │   └── SKILL.md
+    ├── technical-lead/
+    │   └── SKILL.md
+    └── pm/
+        └── SKILL.md
+├── settings.local.json
+└── rules/
+    └── role-transitions.json (optional)
+```
+
+**How to use:**
+
+```bash
+# Start a session and invoke specific roles
+claude
+
+# Call the tester role
+Use the tester agent to run the test suite and report failures
+
+# Call the technical lead role
+Have the technical-lead agent review the architecture of this change
+
+# Call the PM role
+Use the product-review skill to evaluate if this meets requirements
+```
+
+**Key configuration in `.claude/settings.local.json`:**
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Agent(tester)",
+      "Agent(developer)",
+      "Agent(technical-lead)",
+      "Agent(pm)"
+    ]
+  }
+}
+```
+
+---
+
+## Best Practices for Multi-Role Setup
+
+1. **Write detailed descriptions** — Claude uses the description field to decide when to delegate. Include keywords like "use proactively" to encourage automatic invocation.
+2. **Restrict tool access by role:**
+  - PM: Read, Grep, Glob (read-only)
+  - Tester: Bash, Read, Grep (test execution)
+  - Developer: All tools
+  - Technical Lead: All tools + deeper analysis
+3. **Use custom system prompts** to encode each role's mindset, priorities, and workflows.
+4. **Store project roles in `.claude/agents/`** so your team can use them consistently.
+5. **Use persistent memory** (via the memory field) for roles that should learn across sessions:
+   `memory: user`  # Tester learns about recurring issues
+6. **Combine with CLAUDE.md instructions** for shared context that all roles need.
+7. **For parallel work** (e.g., security + performance reviews simultaneously), use agent teams instead of sequential subagent calls.
+
+---
+
+## Comparison Table
+
+<table>
+<thead>
+<tr>
+<th>Approach</th>
+<th>Use When</th>
+<th>Isolation</th>
+<th>Communication</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Subagents</td>
+<td>Sequential role work, cost-effective, focused tasks</td>
+<td>Own context window</td>
+<td>Report back to main agent</td>
+</tr>
+<tr>
+<td>Agent Teams</td>
+<td>Parallel work, inter-role discussion, competing ideas</td>
+<td>Own context window + shared task list</td>
+<td>Direct messaging between agents</td>
+</tr>
+<tr>
+<td>Skills</td>
+<td>Reusable workflows, conditional role switching</td>
+<td>Same context as main</td>
+<td>Inline (same conversation)</td>
+</tr>
+</tbody>
+</table>
+
+For your YAMAZEN CMS project, I'd recommend:
+- Use subagents for developer, tester, and technical-lead roles (each with focused tools and prompts)
+- Create a PM skill that you invoke when evaluating feature completeness
+- Store in `.claude/agents/` so your team can use them consistently
+
+**Sources:**
+- `https://code.claude.com/docs/en/sub-agents.md`
+- `https://code.claude.com/docs/en/agent-teams.md`
+- `https://code.claude.com/docs/en/skills.md`
+- `https://code.claude.com/docs/en/settings.md`
+
+---
+
+## Multi-Agent Roles in Claude Code Summary
+
+There are 3 approaches, from most to least recommended:
+
+### 1. Subagents (Best for your case)
+
+Create role-specific agents under `.claude/agents/`:
+
+```text
+.claude/agents/
+├── developer/SKILL.md
+├── tester/SKILL.md
+├── technical-lead/SKILL.md
+└── pm/SKILL.md
+```
+
+**Example — `.claude/agents/tester/SKILL.md`:**
+
+```yaml
+---
+name: tester
+description: QA specialist for running tests, reproducing failures, and validating fixes
+tools: Bash, Read, Grep, Glob
+model: sonnet
+---
+```
+
+You are a QA specialist. When invoked:
+1. Run the test suite and capture failures
+2. Provide root cause analysis
+3. Suggest fixes and verify they don't break other tests
+
+**Example — `.claude/agents/technical-lead/SKILL.md`:**
+
+```yaml
+---
+name: technical-lead
+description: Architecture reviewer for code quality, patterns, and design decisions
+tools: Read, Grep, Glob, Bash
+---
+```
+
+You are a senior technical lead. Review for:
+1. Architecture alignment with project conventions
+2. Code quality, SOLID principles
+3. Security and performance concerns
+4. Suggest improvements with rationale
+
+**Example — `.claude/agents/pm/SKILL.md`:**
+
+```yaml
+---
+name: pm
+description: Product manager reviewing requirements alignment and user impact
+tools: Read, Grep, Glob
+---
+```
+
+You are a product manager. Evaluate:
+1. Does this meet the spec in project_specs/?
+2. User impact and edge cases
+3. Missing requirements
+4. Business value assessment
+
+**Usage in conversation:**
+
+- Use the tester agent to run the full test suite
+- Use the technical-lead agent to review the Product model architecture
+- Use the pm agent to check if this meets the requirements in REQUIREMENTS.md
+
+### 2. Agent Teams (For parallel reviews)
+
+Enable in settings:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Then you can say: "Create a team: one agent reviews security, another reviews performance, another checks test coverage — all in parallel."
+
+### 3. Skills (Lightweight, same context)
+
+Create under `~/.claude/skills/` — these run inline (no separate context window), good for quick role switches like your existing code-review or tester skills.
+
+### Recommended setup for your project
+
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Approach</th>
+<th>Tool Access</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Developer</td>
+<td>Default Claude Code</td>
+<td>All tools</td>
+</tr>
+<tr>
+<td>Tester</td>
+<td>Subagent</td>
+<td>Bash, Read, Grep, Glob</td>
+</tr>
+<tr>
+<td>Technical Lead</td>
+<td>Subagent</td>
+<td>Read, Grep, Glob, Bash</td>
+</tr>
+<tr>
+<td>PM</td>
+<td>Subagent (read-only)</td>
+<td>Read, Grep, Glob</td>
+</tr>
+</tbody>
+</table>
+
+Create them interactively with `/agents` or manually as shown above. Store in `.claude/agents/` so they're shared with your team via Git.
