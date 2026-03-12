@@ -1,0 +1,273 @@
+---
+slug: 'obsidian-qmd-claude-folder-structure'
+title: 'Top 3 Folder Structures for Professional Obsidian with QMD and Claude Integration'
+date: '2026-03-12'
+author: 'Khoa Le'
+description: 'A practical guide to organizing your Obsidian vault for professional use — optimized for QMD local hybrid search and Claude AI integration via MCP.'
+categories:
+  - 'productivity'
+  - 'ai'
+keywords:
+  - 'obsidian'
+  - 'qmd'
+  - 'claude'
+  - 'knowledge-management'
+  - 'pkm'
+  - 'ai-tools'
+  - 'mcp'
+published: true
+---
+
+Most Obsidian setups fall apart when you try to plug in an AI. Notes are scattered, search is noisy, and Claude has no idea what's in your vault or where to look. The fix isn't a smarter AI — it's a smarter folder structure.
+
+This guide covers the **top 3 ways to organize your Obsidian vault** so it integrates cleanly with **[QMD](https://github.com/tobi/qmd)** — a local hybrid search engine for markdown docs — and **Claude AI** via the MCP protocol.
+
+## What is QMD?
+
+Before diving into folder structures, it's worth understanding what QMD actually is. QMD (by [tobi](https://github.com/tobi)) is a **mini CLI search engine for your local markdown knowledge base**. It combines:
+
+- **BM25 full-text search** — fast keyword-based retrieval
+- **Vector semantic search** — find notes by meaning, not just keywords
+- **LLM re-ranking** — a local model scores results for final relevance
+
+All of this runs **fully on-device** using GGUF models via `node-llama-cpp`. No cloud, no API calls for search.
+
+The killer feature for AI workflows: QMD exposes an **MCP (Model Context Protocol) server**, which means Claude Code or Claude Desktop can query your Obsidian vault natively as a tool — searching, retrieving, and getting full document content on demand.
+
+```bash
+# Install
+npm install -g @tobilu/qmd
+
+# Three search modes
+qmd search "authentication"     # BM25 keyword — fast
+qmd vsearch "how to deploy"     # Vector semantic — meaning-aware
+qmd query "quarterly planning"  # Hybrid + re-ranking — best quality
+```
+
+---
+
+## The Core Principle: Folders = Collections
+
+The most important thing to understand about optimizing for QMD: **your folders become your collections**. Each top-level folder you register as a QMD collection gets its own search scope, its own context description, and its own vector index.
+
+When Claude searches your vault via MCP, it can say: *"search only in `docs`"* or *"search only in `meetings`"*. The cleaner your folder separation, the more targeted — and accurate — Claude's answers become.
+
+```bash
+# Each folder → one QMD collection
+qmd collection add ~/vault/meetings --name meetings
+qmd collection add ~/vault/docs --name docs
+qmd collection add ~/vault/projects --name projects
+
+# Context descriptions dramatically improve search relevance
+qmd context add qmd://meetings "Team meeting transcripts and decisions"
+qmd context add qmd://docs "Technical documentation and SOPs"
+qmd context add qmd://projects "Active project notes and deliverables"
+
+# Generate embeddings
+qmd embed
+```
+
+With that mental model in place, here are the top 3 structures.
+
+---
+
+## 1. Collection-Native Structure
+
+**Best for:** People who want to design around QMD from day one.
+
+This is the most direct approach — design your vault so each top-level folder maps cleanly to exactly one QMD collection. No ambiguity, no overlap.
+
+```
+vault/
+├── meetings/       → collection "meetings"
+├── docs/           → collection "docs"
+├── projects/       → collection "projects"
+├── knowledge/      → collection "knowledge"
+└── _system/        → NOT indexed (templates, attachments, config)
+```
+
+**Why it works with QMD:** QMD's search scoping (`-c` flag) becomes trivial. Claude can call `qmd query "deployment issue" -c docs` and only search your technical docs — not accidentally surfacing a meeting note from six months ago.
+
+**Why it works with Claude:** Claude gets a clean map of your vault. You can describe each collection in your `CLAUDE.md` file and Claude will know exactly where to look before it even runs a search.
+
+**Setup:**
+
+```bash
+qmd context add qmd://meetings "Team meeting transcripts and decisions"
+qmd context add qmd://docs "Technical documentation, SOPs, runbooks"
+qmd context add qmd://projects "Active projects — notes, plans, deliverables"
+qmd context add qmd://knowledge "Permanent notes, research, synthesized ideas"
+```
+
+---
+
+## 2. PARA + QMD Context Tree
+
+**Best for:** Professionals with mixed project, reference, and archival work.
+
+PARA (Projects, Areas, Resources, Archives) is one of the most proven knowledge management frameworks. It maps naturally to QMD because each PARA bucket becomes a collection, and QMD's **context tree** lets you add rich descriptions per sub-path.
+
+```
+vault/
+├── 1-Projects/          → collection "projects"
+│   ├── Q1-Report/
+│   ├── Website-Redesign/
+│   └── Client-X/
+├── 2-Areas/             → collection "areas"
+│   ├── Team-Management/
+│   └── Engineering/
+├── 3-Resources/         → collection "resources"
+├── 4-Archives/          → low-priority or excluded
+└── _system/             → excluded
+```
+
+QMD's context works as a tree — you add context to a collection root, then to specific sub-paths, and it **inherits**. This means Claude gets context not just about the collection but about the specific subfolder.
+
+```bash
+qmd context add qmd://projects "Active projects with deadlines and deliverables"
+qmd context add qmd://projects/Q1-Report "Q1 financial report — data analysis and exec summary"
+qmd context add qmd://areas "Ongoing responsibilities — team management, engineering"
+qmd context add qmd://resources "Reference material, code snippets, external research"
+```
+
+Now Claude can run:
+
+```bash
+qmd query "OKR progress this quarter" -c areas
+qmd query "client requirements" -c projects/Client-X
+```
+
+The sub-path context makes results dramatically more precise. A search for "deployment" in `projects/Website-Redesign` returns completely different results than a search in `docs/infrastructure`.
+
+---
+
+## 3. Input → Knowledge → Output Pipeline
+
+**Best for:** Agentic workflows where Claude is actively creating, not just retrieving.
+
+This structure separates notes by their **state of work** — raw capture, synthesized knowledge, and final deliverables. It maps perfectly to how an AI agent reads, thinks, and writes.
+
+```
+vault/
+├── 01-Inbox/            → raw capture (web clips, rough notes)
+├── 02-Knowledge/        → synthesized permanent notes
+│   ├── engineering/
+│   ├── management/
+│   └── ai-research/
+├── 03-Outputs/          → deliverables, reports, documentation
+│   ├── reports/
+│   └── processes/
+└── _system/             → excluded
+```
+
+**The workflow this enables:**
+
+1. Claude searches `01-Inbox` and `02-Knowledge` for relevant context
+2. Claude synthesizes and drafts into `03-Outputs`
+3. You review and promote to knowledge as needed
+
+QMD's `--files` flag makes step 1 agentic-friendly — it returns clean file paths that Claude can then `get` for full content:
+
+```bash
+qmd query "Laravel deployment" --files --min-score 0.4 -c knowledge
+```
+
+---
+
+## Setting Up Claude Integration
+
+All three structures work with the same Claude integration setup.
+
+**Step 1 — Configure MCP in Claude Code:**
+
+```json
+// ~/.claude/settings.json
+{
+  "mcpServers": {
+    "qmd": {
+      "command": "qmd",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Or install the Claude Code plugin:
+
+```bash
+claude plugin marketplace add tobi/qmd
+claude plugin install qmd@qmd
+```
+
+**Step 2 — Add a `CLAUDE.md` in your vault root:**
+
+```markdown
+# Vault Search Instructions
+
+- Use `query` for best results (hybrid + re-ranking)
+- Use `search` for fast keyword lookup
+- Scope with `-c <collection>` to reduce noise
+- Call `get` to retrieve full document when a snippet isn't enough
+- Collections: meetings, docs, projects, knowledge
+```
+
+**Step 3 — For shared long-lived server (avoids reloading models):**
+
+```bash
+# Run as daemon — models stay loaded in VRAM
+qmd mcp --http --daemon
+
+# Claude connects to:
+# http://localhost:8181/mcp
+```
+
+---
+
+## Markdown Best Practices for QMD
+
+QMD smart-chunks your files at **heading boundaries**. The algorithm scores break points:
+
+<table>
+<thead>
+<tr><th>Pattern</th><th>Score</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code># Heading</code></td><td>100</td><td>H1 — major section break</td></tr>
+<tr><td><code>## Heading</code></td><td>90</td><td>H2 — subsection</td></tr>
+<tr><td><code>### Heading</code></td><td>80</td><td>H3</td></tr>
+<tr><td>Code fence</td><td>80</td><td>Code block boundary</td></tr>
+<tr><td>Blank line</td><td>20</td><td>Paragraph boundary</td></tr>
+<tr><td>List item</td><td>5</td><td>Minimal break</td></tr>
+</tbody>
+</table>
+
+**Practical implications:**
+
+- **Use proper heading hierarchy** (`#`, `##`, `###`) — it's not just for readability, it directly improves how QMD chunks and retrieves your notes
+- **Keep related info under one heading** — QMD tries not to split a section across chunks
+- **Code blocks are protected** — QMD never splits a code block, even if it exceeds the chunk size. Write complete, self-contained code examples
+
+---
+
+## Which Structure Should You Choose?
+
+<table>
+<thead>
+<tr><th>If you…</th><th>Use</th></tr>
+</thead>
+<tbody>
+<tr><td>Want the simplest setup that maps 1:1 with QMD collections</td><td>Collection-Native</td></tr>
+<tr><td>Have a mix of active projects + reference material + archives</td><td>PARA + QMD Context Tree</td></tr>
+<tr><td>Want Claude to actively draft and write, not just retrieve</td><td>Input → Knowledge → Output</td></tr>
+</tbody>
+</table>
+
+For most engineering managers and developers juggling client projects, team responsibilities, and technical reference material, **PARA + QMD Context Tree** is the sweet spot. The project-level scoping is immediately useful, the context tree descriptions pay off quickly, and it scales well as your vault grows.
+
+---
+
+## Final Thoughts
+
+The insight here is simple but easy to miss: **QMD doesn't just search your vault — it gives Claude a map of your vault**. The context descriptions you add per collection and per sub-path are essentially telling Claude what kind of knowledge lives where, before any search even happens.
+
+A well-structured vault isn't just easier to navigate for humans — it makes your AI agent dramatically more effective. Take the 20 minutes to set up your collections and context descriptions. The compound returns are worth it.
