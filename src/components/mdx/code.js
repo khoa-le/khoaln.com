@@ -1,7 +1,7 @@
 import React from 'react'
 import {css} from '@emotion/react'
 import {Highlight, themes} from 'prism-react-renderer'
-import theme from '../../config/theme'
+import theme from '../../../config/theme'
 import {bpDesktopOnly} from '../../lib/breakpoints'
 
 const prismTheme = themes.nightOwl
