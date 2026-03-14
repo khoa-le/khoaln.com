@@ -1,265 +1,273 @@
 import React from 'react'
 import {graphql, Link} from 'gatsby'
 import {css} from '@emotion/react'
+import styled from '@emotion/styled'
 import SEO from 'components/seo'
 import Layout from 'components/layout'
 import Container from 'components/container'
 import theme from '../../config/theme'
 import {bpMaxSM} from '../lib/breakpoints'
 
+/* ── Styled Components ──────────────────────────────────────────────────── */
+
+const Hero = styled.section`
+  background: ${theme.colors.dark};
+  padding: 80px 0 80px;
+  ${bpMaxSM} { padding: 60px 0 60px; }
+`
+
+const HeroTitle = styled.h1`
+  color: ${theme.colors.white};
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  margin: 0 0 24px;
+  max-width: 600px;
+  
+  span {
+    color: ${theme.colors.orange};
+  }
+
+  ${bpMaxSM} { font-size: 2.25rem; }
+`
+
+const HeroSubtitle = styled.p`
+  color: ${theme.colors.textSubtle};
+  font-size: 1.25rem;
+  line-height: 1.6;
+  max-width: 580px;
+  margin: 0 0 32px;
+  
+  strong {
+    color: ${theme.colors.white};
+    font-weight: 500;
+  }
+
+  ${bpMaxSM} { font-size: 1.125rem; }
+`
+
+const HeroActions = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+`
+
+const PrimaryBtn = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background: ${theme.colors.orangeDark};
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: ${theme.radii.default};
+  text-decoration: none;
+  transition: all 150ms ease;
+  
+  &:hover {
+    background: #c2410c;
+    color: white;
+    transform: translateY(-1px);
+  }
+`
+
+const SecondaryBtn = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+  border-radius: ${theme.radii.default};
+  text-decoration: none;
+  transition: all 150ms ease;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+  }
+`
+
+const LatestSection = styled.section`
+  background: ${theme.colors.bg};
+  padding: 80px 0;
+`
+
+const SectionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 40px;
+  
+  ${bpMaxSM} {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+`
+
+const SectionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: ${theme.colors.text};
+  margin: 0;
+`
+
+const ViewAllLink = styled(Link)`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: ${theme.colors.orangeDark};
+  font-weight: 600;
+  font-size: 0.9375rem;
+  text-decoration: none;
+  
+  &:hover {
+    color: ${theme.colors.orangeMid};
+    
+    svg {
+      transform: translateX(4px);
+    }
+  }
+  
+  svg {
+    transition: transform 150ms ease;
+  }
+`
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 32px;
+`
+
+const Card = styled(Link)`
+  display: flex;
+  flex-direction: column;
+  background: ${theme.colors.white};
+  border: 1px solid ${theme.colors.border};
+  border-radius: ${theme.radii.lg};
+  overflow: hidden;
+  text-decoration: none;
+  transition: all 150ms ease;
+  height: 100%;
+
+  &:hover {
+    border-color: rgba(234, 88, 12, 0.4);
+    box-shadow: ${theme.shadows.md};
+    transform: translateY(-2px);
+    
+    h3 { color: ${theme.colors.orangeDark}; }
+  }
+`
+
+const CardBody = styled.div`
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+`
+
+const CardMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 0.75rem;
+  color: ${theme.colors.textMuted};
+  font-family: ${theme.fonts.mono};
+`
+
+const CardTitle = styled.h3`
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: ${theme.colors.text};
+  margin: 0 0 12px;
+  transition: color 150ms ease;
+`
+
+const CardDesc = styled.p`
+  font-size: 0.9375rem;
+  color: ${theme.colors.textMuted};
+  line-height: 1.6;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`
+
+const ArrowIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+    <polyline points="12 5 19 12 12 19"></polyline>
+  </svg>
+)
+
+/* ── Main Component ─────────────────────────────────────────────────────── */
+
 export default function Index({data: {allMdx}}) {
   return (
-    <Layout>
+    <Layout headerLink="/" noFooter={false}>
       <SEO />
-
-      {/* Hero Section */}
-      <section
-        css={css`
-          background: ${theme.colors.dark};
-          padding: 80px 0;
-          ${bpMaxSM} {
-            padding: 48px 0;
-          }
-        `}
-      >
-        <Container maxWidth={1024}>
-          <div
-            css={css`
-              max-width: 640px;
-            `}
-          >
-            <h1
-              css={css`
-                color: ${theme.colors.white};
-                font-size: 2.5rem;
-                font-weight: 700;
-                letter-spacing: -0.025em;
-                line-height: 1.2;
-                margin: 0 0 16px 0;
-                ${bpMaxSM} {
-                  font-size: 1.875rem;
-                }
-              `}
-            >
-              Hi, I'm{' '}
-              <span
-                css={css`
-                  color: ${theme.colors.orange};
-                `}
-              >
-                Khoa Le
-              </span>
-            </h1>
-            <p
-              css={css`
-                color: ${theme.colors.textSubtle};
-                font-size: 1.125rem;
-                line-height: 1.7;
-                margin: 0;
-                ${bpMaxSM} {
-                  font-size: 1rem;
-                }
-              `}
-            >
-              Software engineering manager based in Vietnam. I lead a team of
-              developers working on digital transformation projects and write
-              about software development, leadership, and technology.
-            </p>
-            <div
-              css={css`
-                margin-top: 32px;
-                display: flex;
-                gap: 12px;
-                ${bpMaxSM} {
-                  flex-direction: column;
-                }
-              `}
-            >
-              <Link
-                to="/blog"
-                css={css`
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 8px;
-                  padding: 12px 24px;
-                  background: ${theme.colors.orangeDark};
-                  color: ${theme.colors.white} !important;
-                  font-size: 14px;
-                  font-weight: 500;
-                  border-radius: ${theme.radii.default};
-                  transition: ${theme.transition.fast};
-                  &:hover {
-                    background: #c2410c;
-                    color: ${theme.colors.white} !important;
-                  }
-                `}
-              >
-                Read the Blog
-                <svg
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-              </Link>
-              <Link
-                to="/about"
-                css={css`
-                  display: inline-flex;
-                  align-items: center;
-                  padding: 12px 24px;
-                  background: transparent;
-                  color: ${theme.colors.textSubtle} !important;
-                  font-size: 14px;
-                  font-weight: 500;
-                  border-radius: ${theme.radii.default};
-                  border: 1px solid rgba(255, 255, 255, 0.2);
-                  transition: ${theme.transition.fast};
-                  &:hover {
-                    background: rgba(255, 255, 255, 0.1);
-                    color: ${theme.colors.white} !important;
-                  }
-                `}
-              >
-                About Me
-              </Link>
-            </div>
-          </div>
+      
+      {/* Hero */}
+      <Hero>
+        <Container maxWidth={1000}>
+          <HeroTitle>
+            Hi, I'm <span>Khoa Le</span>.
+          </HeroTitle>
+          <HeroSubtitle>
+            <strong>Engineering Manager</strong> based in Vietnam. <br />
+            I lead developers, build AI systems, and write about software architecture and leadership.
+          </HeroSubtitle>
+          <HeroActions>
+            <PrimaryBtn to="/blog">Read the Blog</PrimaryBtn>
+            <SecondaryBtn to="/about">About Me</SecondaryBtn>
+          </HeroActions>
         </Container>
-      </section>
+      </Hero>
 
-      {/* Latest Posts Section */}
-      <section
-        css={css`
-          padding: 64px 0;
-        `}
-      >
-        <Container maxWidth={1024}>
-          <div
-            css={css`
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 32px;
-            `}
-          >
-            <h2
-              css={css`
-                font-size: 1.5rem;
-                font-weight: 600;
-                color: ${theme.colors.text};
-                margin: 0;
-              `}
-            >
-              Latest Posts
-            </h2>
-            <Link
-              to="/blog"
-              css={css`
-                font-size: 14px;
-                font-weight: 500;
-                color: ${theme.colors.orangeDark};
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                &:hover {
-                  color: ${theme.colors.orangeMid};
-                }
-              `}
-            >
-              View all
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </Link>
-          </div>
+      {/* Latest Posts */}
+      <LatestSection>
+        <Container maxWidth={1000}>
+          <SectionHeader>
+            <SectionTitle>Latest Articles</SectionTitle>
+            <ViewAllLink to="/blog">
+              View all posts <ArrowIcon />
+            </ViewAllLink>
+          </SectionHeader>
 
-          <div
-            css={css`
-              display: grid;
-              gap: 16px;
-            `}
-          >
+          <Grid>
             {allMdx.edges.map(({node: post}) => (
-              <article key={post.id} className="card-interactive">
-                <Link
-                  to={post.fields.slug}
-                  css={css`
-                    display: block;
-                    padding: 24px;
-                    color: ${theme.colors.text};
-                    &:hover {
-                      color: ${theme.colors.text};
-                    }
-                  `}
-                >
-                  <div
-                    css={css`
-                      display: flex;
-                      justify-content: space-between;
-                      align-items: flex-start;
-                      gap: 16px;
-                      ${bpMaxSM} {
-                        flex-direction: column;
-                        gap: 8px;
-                      }
-                    `}
-                  >
-                    <div>
-                      <h3
-                        css={css`
-                          font-size: 1.125rem;
-                          font-weight: 600;
-                          color: ${theme.colors.text};
-                          margin: 0 0 8px 0;
-                          transition: color 150ms ease;
-                        `}
-                      >
-                        {post.frontmatter.title}
-                      </h3>
-                      {post.frontmatter.description && (
-                        <p
-                          css={css`
-                            font-size: 14px;
-                            color: ${theme.colors.textMuted};
-                            margin: 0;
-                            line-height: 1.6;
-                          `}
-                        >
-                          {post.frontmatter.description.replace(/^_|_$/g, '')}
-                        </p>
-                      )}
-                    </div>
-                    <time
-                      css={css`
-                        font-size: 12px;
-                        font-family: ${theme.fonts.mono};
-                        color: ${theme.colors.textSubtle};
-                        white-space: nowrap;
-                      `}
-                    >
-                      {post.frontmatter.date}
-                    </time>
-                  </div>
-                </Link>
-              </article>
+              <Card key={post.id} to={post.fields.slug}>
+                <CardBody>
+                  <CardMeta>
+                    <time>{post.frontmatter.date}</time>
+                    {post.frontmatter.categories?.[0] && (
+                      <>
+                        <span>•</span>
+                        <span css={css`color: ${theme.colors.orange}; font-weight: 600;`}>
+                          {post.frontmatter.categories[0].toUpperCase()}
+                        </span>
+                      </>
+                    )}
+                  </CardMeta>
+                  <CardTitle>{post.frontmatter.title}</CardTitle>
+                  <CardDesc>
+                    {post.frontmatter.description || post.excerpt}
+                  </CardDesc>
+                </CardBody>
+              </Card>
             ))}
-          </div>
+          </Grid>
         </Container>
-      </section>
+      </LatestSection>
     </Layout>
   )
 }
@@ -267,10 +275,10 @@ export default function Index({data: {allMdx}}) {
 export const pageQuery = graphql`
   query {
     allMdx(
-      limit: 5
+      limit: 6
       sort: {frontmatter: {date: DESC}}
       filter: {
-        frontmatter: {published: {ne: false}, unlisted: {ne: true}}
+        frontmatter: {published: {ne: false}}
         internal: {contentFilePath: {regex: "//content/blog//"}}
       }
     ) {
@@ -278,15 +286,15 @@ export const pageQuery = graphql`
         node {
           id
           fields {
-            title
             slug
-            date
           }
           frontmatter {
             title
-            date(formatString: "MMM DD, YYYY")
+            date(formatString: "MMMM DD, YYYY")
             description
+            categories
           }
+          excerpt(pruneLength: 150)
         }
       }
     }
