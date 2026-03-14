@@ -1,0 +1,130 @@
+---
+slug: 'gstack-review-ai-development-workflow'
+title: 'Review: gstack by Garry Tan — The Operating System for AI-Powered Software Teams'
+date: '2026-03-14'
+author: 'Khoa Le'
+description: 'A deep dive into gstack, the opinionated Claude Code workflow system that transforms a single AI assistant into a team of specialists (CEO, Eng Manager, QA Engineer, Release Manager)."
+categories:
+  - 'ai'
+  - 'productivity'
+  - 'devtools'
+keywords:
+  - 'gstack'
+  - 'claude-code'
+  - 'ai-agents'
+  - 'software-development'
+  - 'automation'
+published: true
+banner: './images/gstack-banner.jpg'
+bannerCredit: 'Inspired by gstack by Garry Tan (Y Combinator)'
+---
+
+If you use Claude Code (Anthropic's CLI assistant) or similar AI coding agents, you might have noticed a common problem: **the AI is stuck in one "mode."** Itbrainstorms like a founder, reviews code like a junior dev, and ships like it's afraid to break something. But in reality, software development requires distinct cognitive modes — and mixing them usually results in a mediocre blend of all four.
+
+That’s exactly the problem **gstack** solves. Created by **Garry Tan**, President & CEO of Y Combinator, gstack is not just another prompt pack. It is an operating system for AI-assisted development that transforms Claude Code from one generic assistant into a team of specialists you can summon on demand.
+
+---
+
+## 🧠 The Core Problem: One Brain Can't Do Everything
+
+Think about your own workflow as an Engineering Manager:
+
+- When **planning**, you want founder-level ambition. You want to ask: "What is the 10-star product hiding inside this request?"
+- When **architecting**, you want technical rigor. You want diagrams, state machines, failure modes, and test matrices.
+- When **reviewing code**, you want to be paranoid. You want to find the bugs that pass CI but blow up in production.
+- When **shipping**, you want execution. You want to stop talking and land the plane.
+
+If your AI assistant does all of this with the same "personality," you get weak results in every category. **gstack** gives you explicit gears.
+
+---
+
+## 🔧 What is gstack?
+
+**gstack** is a collection of 8 opinionated skills (slash commands) for Claude Code. Each skill activates a different "brain" for the AI:
+
+| Skill | Mode | What it Does |
+|-------|------|---------------|
+| `/plan-ceo-review` | Founder / CEO | Rethinks the problem. Finds the 10-star product hiding inside your request. |
+| `/plan-eng-review` | Eng Manager / Tech Lead | Locks in architecture, data flow, diagrams, edge cases, and tests. |
+| `/review` | Paranoid Staff Engineer | Finds bugs that pass CI but blow up in production. Integrates with Greptile. |
+| `/ship` | Release Engineer | Syncs main, runs tests, pushes, opens PR. For a ready branch, not deciding what to build. |
+| `/browse` | QA Engineer | Gives the agent eyes. Logs in, clicks through your app, takes screenshots in a real browser. |
+| `/qa` | QA Lead | Systematic QA testing. Analyzes your git diff to identify affected pages and tests them automatically. |
+| `/setup-browser-cookies` | Session Manager | Imports cookies from your real browser so /qa can test authenticated pages. |
+| `/retro` | Engineering Manager | Team-aware retrospectives with per-person praise, growth opportunities, and shipping metrics. |
+
+---
+
+## 💡 Key Selling Points
+
+### 1. **Role-Based Cognitive Modes**
+Instead of one "mushy generic mode," you explicitly tell the model what kind of brain to use. Switch between founder taste, engineering rigor, paranoid review, or fast execution in one conversation.
+
+### 2. **Browser Automation (Finally Done Right)**
+The `/browse` skill is a game-changer. It uses a compiled Playwright binary that persists across commands. The AI can actually **see** your app — click through forms, take screenshots, check console errors, and verify UI states. No more guessing if the button actually works.
+
+### 3. **Automated QA from Git Diffs**
+This is wild: `/qa` reads your git diff, identifies which routes and pages changed, spins up a browser, and tests each one automatically. No manual test plan. No opening Chrome yourself. It just works.
+
+### 4. **Greptile Integration**
+gstack integrates with [Greptile](https://greptile.com) (a YC company that reviews PRs automatically). The `/review` and `/ship` skills can read Greptile's comments, classify them (valid / already fixed / false positive), and even reply to them. This creates a two-layer review system.
+
+### 5. **Team Retrospectives**
+The `/retro` skill analyzes commit history and writes candid retrospectives. It identifies who shipped what, gives specific praise and growth opportunities per contributor, and tracks metrics like commits, LOC, test ratio, and PR sizes.
+
+---
+
+## 🏗️ Technical Internals
+
+- **Runtime:** Claude Code (Anthropic) + Bun v1.0+
+- **Browser:** Compiled Playwright binary (`browse/dist/browse`, ~58MB). Runs persistent Chromium.
+- **Architecture:** Skills are Markdown prompts + symlinks at `~/.claude/skills/`. Nothing touches your PATH.
+- **Parallelism:** Works with one Claude Code session, but transformative with ten. [Conductor](https://conductor.build) runs multiple sessions in parallel, each with its own isolated browser instance.
+- **Data Storage:** QA reports saved to `.gstack/qa-reports/`. Retro snapshots saved to `.context/retros/`.
+
+---
+
+## 🎯 How Does It Fit for Me (and You)?
+
+As an Engineering Manager at a Japanese company with 6 branches across Asia and a team of ~15 members, I face unique challenges:
+
+### 1. **Balancing Growth vs. Delivery**
+My team needs to ship fast, but developers also need to grow. `/retro` would help me track shipping velocity and give specific feedback to each team member without spending hours manually reviewing git logs.
+
+### 2. **Quality Assurance at Scale**
+We have multiple projects (Laravel, Vue.js, WordPress, Magento). Manual QA eats up time. `/qa` could automatically test feature branches by analyzing the diff and hitting the right endpoints. This is huge for a small team.
+
+### 3. **Architecture Discipline**
+When we rush to ship, we sometimes skip technical design. `/plan-eng-review` forces the model (and us) to draw diagrams, define state machines, and think about failure modes **before** we code.
+
+### 4. **Distributed Team Communication**
+We work across time zones. Having `/ship` automate the boring release work (sync main, run tests, update changelog, push PR) reduces the "last mile" friction that kills momentum.
+
+### 5. **Pair Programming with AI**
+We are already using OpenClaw (similar to Claude Code but via Telegram). gstack's approach could complement our workflow — using OpenClaw for high-level tasks and gstack's specialized skills for deep engineering work.
+
+---
+
+## 🤔 Should You Try It?
+
+**Yes, if:**
+- You use Claude Code (or a similar AI coding assistant) daily
+- You want consistent, high-rig workflows instead of one generic mode
+- You are an Engineering Manager who wants AI to help with technical planning and team retrospectives
+- You want to automate QA and browser testing
+- You want to ship faster with less friction
+
+**Skip it, if:**
+- You are new to AI coding tools
+- You prefer simple prompts over structured workflows
+- You don't need automated QA or browser testing
+
+---
+
+## 🚀 The Bigger Picture
+
+Garry Tan's insight is profound: **"Planning is not review. Review is not shipping. Founder taste is not engineering rigor. If you blur all of that together, you usually get a mediocre blend of all four."**
+
+gstack is not about making AI smarter. It is about making AI **specialized** — and giving you explicit gears to switch between them. That is the real unlock.
+
+If you want to see what a "10x developer" workflow looks like with AI, gstack is the closest thing I have seen to a real implementation.
