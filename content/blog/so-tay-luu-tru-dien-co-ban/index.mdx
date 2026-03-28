@@ -1,0 +1,109 @@
+---
+slug: 'so-tay-luu-tru-dien-co-ban'
+title: 'Sổ Tay Lưu Trữ Điện: Bảng Tổng Hợp Thông Số Các Thiết Bị (Từ Nhỏ Đến Lớn)'
+date: '2026-03-28'
+author: 'Khoa Le'
+description: 'Bảng tổng hợp thông số dung lượng, công suất và khả năng chịu tải của các thiết bị lưu trữ điện. Dùng làm tài liệu tham khảo nhanh khi setup hệ thống điện.'
+categories:
+  - 'hardware'
+  - 'notes'
+keywords:
+  - 'lưu trữ điện'
+  - 'power station'
+  - 'pin'
+  - 'lifepo4'
+  - 'inverter'
+published: true
+---
+
+Bài viết này tổng hợp thông số cơ bản của các hệ thống lưu trữ điện phổ biến. Mục đích là để tra cứu nhanh khi cần lên kế hoạch mua sắm hoặc tính toán khả năng "sống sót" khi cúp điện. 
+
+### Bảng Tổng Hợp Thông Số Các Thiết Bị Lưu Trữ Điện
+
+> **Lưu ý:** Bảng dưới đây sử dụng thông số tham khảo trung bình. Dung lượng khả dụng thực tế sẽ phụ thuộc vào hiệu suất của bộ Inverter (Biến tần) và mạch xả (BMS) đi kèm.
+
+<table>
+  <thead>
+    <tr>
+      <th>Phân loại</th>
+      <th>Dung lượng Lý thuyết</th>
+      <th>Dung lượng Thực tế (Khả dụng)</th>
+      <th>Khả năng chịu tải (Công suất đầu ra)</th>
+      <th>Khả năng "gánh" thiết bị tham khảo (Sạc đầy)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Sạc Dự Phòng</strong><br/>(Power Bank)</td>
+      <td>20.000 mAh (Hệ 3.7V)<br/><em>(~ 74Wh)</em></td>
+      <td><strong>~ 45Wh - 50Wh</strong><br/><em>(Hiệu suất 60-65%)</em></td>
+      <td>Thường từ <strong>15W - 65W</strong><br/><em>(Chỉ sạc qua cổng USB/Type-C)</em></td>
+      <td>
+        - Điện thoại: Sạc đầy 3 - 4 lần<br/>
+        - iPad: Sạc đầy 1.5 lần<br/>
+        - Quạt mini USB: ~ 10 - 15 giờ
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Trạm Điện Nhỏ</strong><br/>(Portable Mini)</td>
+      <td>960Wh</td>
+      <td><strong>~ 816Wh</strong><br/><em>(Hiệu suất ~85%)</em></td>
+      <td>Thường từ <strong>600W - 1000W</strong><br/><em>(Bắt đầu cắm được điện 220V)</em></td>
+      <td>
+        - Đèn LED (10W): ~ 80 giờ<br/>
+        - Quạt máy (50W): ~ 16 giờ<br/>
+        - Tivi (100W): ~ 8 giờ<br/>
+        - Tủ lạnh nhỏ: ~ 5 - 7 giờ
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Trạm Điện Tầm Trung</strong><br/>(Portable Standard)</td>
+      <td>1280Wh<br/><em>(~ 1.28 kWh)</em></td>
+      <td><strong>~ 1088Wh</strong><br/><em>(Hiệu suất ~85%)</em></td>
+      <td>Thường giới hạn ở <strong>1000W</strong><br/><em>(Cắm quá sẽ báo quá tải)</em></td>
+      <td>
+        - Quạt máy (50W): ~ 22 giờ<br/>
+        - Tivi (100W): ~ 11 giờ<br/>
+        - Nồi cơm nhỏ (500W): ~ 2 giờ<br/>
+        - <strong>KHÔNG</strong> chạy được ấm siêu tốc, điều hòa
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Trạm Điện Lớn</strong><br/>(Heavy-Duty Portable)</td>
+      <td>2024Wh<br/><em>(~ 2.02 kWh)</em></td>
+      <td><strong>~ 1720Wh</strong><br/><em>(Hiệu suất ~85%)</em></td>
+      <td>Thường từ <strong>2000W - 2400W</strong><br/><em>(Kéo được thiết bị sinh nhiệt)</em></td>
+      <td>
+        - Điều hòa 1HP (800W): ~ 2 giờ<br/>
+        - Ấm siêu tốc/Bếp từ (1500W): ~ 1 giờ<br/>
+        - Tủ lạnh gia đình (150W): ~ 12 - 15 giờ
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Pin Lưu Trữ Gia Đình</strong><br/>(Home Storage/Off-grid)</td>
+      <td>51.2V 280Ah<br/><em>(~ 14.3 kWh)</em></td>
+      <td><strong>~ 13.6 kWh</strong><br/><em>(Xả sâu 90% - 95% để bảo vệ pin)</em></td>
+      <td>Phụ thuộc vào Biến tần (Inverter), thường từ <strong>5000W - 8000W</strong></td>
+      <td>
+        <strong>Bao trọn sinh hoạt 1 gia đình/ngày:</strong><br/>
+        Gánh cùng lúc 2 điều hòa, bếp từ, tủ lạnh, đèn, quạt thoải mái.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Lưu Trữ Công Nghiệp</strong><br/>(BESS / Solar Farm)</td>
+      <td>2024 kWh<br/><em>(~ 2 MWh)</em></td>
+      <td>Khổng lồ <em>(Phụ thuộc vào hệ thống quản lý lưới điện)</em></td>
+      <td>Hàng trăm kW đến vài MW</td>
+      <td>
+        - Cấp điện cho <strong>150 - 200 hộ dân / ngày</strong><br/>
+        - Sạc đầy cùng lúc 22 - 25 xe ô tô điện
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+---
+
+### Ghi chú bổ sung (Các khái niệm & Công thức cần nhớ)
+
+*(Phần này dành cho những ghi chép, kiến thức bổ sung và công thức tính toán sẽ được cập nhật trong tương lai).*
