@@ -104,6 +104,43 @@ Bài viết này tổng hợp thông số cơ bản của các hệ thống lưu
 
 ---
 
-### Ghi chú bổ sung (Các khái niệm & Công thức cần nhớ)
+### Ghi chú bổ sung: Các khái niệm & Công thức cần nhớ
 
-*(Phần này dành cho những ghi chép, kiến thức bổ sung và công thức tính toán sẽ được cập nhật trong tương lai).*
+#### 1. Công thức tính toán cơ bản
+- **Tính Công suất (W):** `W = V x A` *(Công suất = Điện áp x Dòng điện)*
+- **Tính Điện năng (Wh):** `Wh = V x Ah` *(Ví dụ: Bình 12V 100Ah có dung lượng lý thuyết là 1200Wh = 1.2kWh)*
+- **Tính Thời gian sử dụng thực tế:** 
+  `Thời gian (Giờ) = (Dung lượng Wh x Hiệu suất Inverter) / Công suất thiết bị (W)`
+  *Lưu ý: Hiệu suất Inverter thường rơi vào khoảng 80% - 90%. Nên nhân với 0.85 để ước lượng an toàn.*
+  *(Ví dụ: Trạm điện 1000Wh, chạy quạt 50W -> Thời gian = (1000 x 0.85) / 50 = 17 giờ).*
+
+#### 2. Các khái niệm quan trọng
+- **DOD (Depth of Discharge - Độ xả sâu):** Là mức độ % pin đã bị xài đi. Ví dụ ắc quy chì chỉ nên xả DOD 50% (còn 50% phải sạc lại ngay) để tránh chai bình. Pin LiFePO4 xả được sâu tới DOD 80-95% mà không sợ hỏng.
+- **Pure Sine Wave (Sin chuẩn) vs Modified Sine Wave (Sin mô phỏng):** 
+  - *Sin chuẩn:* Dòng điện trơn tru như điện lưới quốc gia. Chạy quạt rất êm, tốt cho đồ điện tử nhạy cảm.
+  - *Sin mô phỏng:* Dòng điện hình bậc thang, giá rẻ. Chạy động cơ (như quạt) sẽ nghe tiếng rè rè, nóng motor, hao điện và làm giảm tuổi thọ thiết bị.
+
+---
+
+### Lịch sử & Phân loại Cell Pin (Từ thấp đến cao)
+
+Công nghệ lõi pin quyết định độ an toàn, tuổi thọ và giá thành của một hệ thống lưu trữ điện. Dưới đây là sự tiến hoá của các loại cell pin qua từng thời kỳ:
+
+#### 1. Ắc quy Axit-Chì (Lead-Acid) - Phát minh năm 1859
+- **Đặc điểm:** Công nghệ lâu đời nhất, rất nặng, giá thành cực rẻ.
+- **Nhược điểm:** Tuổi thọ thấp (khoảng 300 - 500 chu kỳ sạc/xả). Xả sâu quá 50% là dễ "chết" bình. Có nguy cơ rò rỉ axit và sinh khí độc nếu sạc sai cách.
+- **Ứng dụng:** Bình ắc quy khởi động xe máy/ô tô, hệ thống lưu trữ điện mặt trời giá rẻ thời kì đầu (nay đã ít dùng cho lưu trữ).
+
+#### 2. Pin Lithium-ion (Li-ion cấu trúc NMC/NCA) - Thương mại hoá năm 1991
+- **Đặc điểm:** Mật độ năng lượng rất cao (nhỏ gọn, nhẹ, chứa được nhiều điện).
+- **Nhược điểm:** Tuổi thọ trung bình (500 - 1000 chu kỳ). Nhược điểm lớn nhất là **kém an toàn về nhiệt**, nếu bị đâm thủng, chập mạch hoặc quá nhiệt sẽ xảy ra hiện tượng *Thermal Runaway* (đoản mạch nhiệt) gây bốc cháy dữ dội và rất khó dập tắt.
+- **Ứng dụng:** Điện thoại, Laptop, Sạc dự phòng, Xe điện thời kỳ đầu, Trạm điện nhỏ gọn ưu tiên trọng lượng nhẹ.
+
+#### 3. Pin Lithium Iron Phosphate (LiFePO4 / LFP) - Thương mại hoá năm 1996 (Thịnh hành vài năm nay)
+- **Đặc điểm:** "Ngôi sao" của làng lưu trữ điện hiện tại. **An toàn tuyệt đối**, dù bị xuyên thủng cũng không bốc cháy. Tuổi thọ cực khủng (3000 - 6000 chu kỳ, xài mỗi ngày thì 10 năm mới giảm còn 80% dung lượng). Xả sâu thoải mái tới 90%.
+- **Nhược điểm:** Mật độ năng lượng thấp hơn Li-ion NMC một chút (cùng một mức dung lượng thì viên pin LiFePO4 to và nặng hơn).
+- **Ứng dụng:** Trạm điện dự phòng thế hệ mới (Portable Power Station), Pin lưu trữ điện mặt trời gia đình (Home Storage), Trạm viễn thông, và trên xe điện thế hệ mới (VinFast, Tesla dùng rất nhiều).
+
+#### 4. Kỷ nguyên tương lai: Pin Natri-ion (Sodium-ion) & Pin Thể Rắn (Solid-State)
+- **Pin Natri-ion:** Sử dụng gốc muối (Natri dồi dào trên trái đất) thay thế cho Lithium đắt đỏ. Hoạt động rất tốt ở nhiệt độ âm lạnh lẽo. Vô cùng hứa hẹn cho hệ thống lưu trữ điện công nghiệp (Solar Farm/Wind Farm) để giảm giá thành cực sâu.
+- **Pin Thể rắn:** Mật độ năng lượng siêu khủng, sạc siêu tốc, hoàn toàn không có dung dịch điện phân lỏng nên không thể cháy. Đây là "chén thánh" của ngành pin nhưng rào cản hiện tại là chi phí sản xuất vẫn còn quá cao.
