@@ -1,0 +1,343 @@
+---
+slug: 'ml-training-practice-plan'
+title: 'From Zero to Fine-tuning: A Practical 8-Week Plan to Master ML Model Training'
+date: '2026-04-03'
+author: 'Khoa Le'
+description: 'A hands-on, phases approach to learning machine learning model training and fine-tuning—from your first no-code model to deploying production-ready LLMs using LoRA, QLoRA, and the Hugging Face ecosystem.'
+categories:
+  - 'machine-learning'
+  - 'ai'
+keywords:
+  - 'machine learning'
+  - 'fine-tuning'
+  - 'llm'
+  - 'hugging face'
+  - 'lora'
+  - 'qlora'
+  - 'transformers'
+  - 'deep learning'
+published: true
+---
+
+# From Zero to Fine-tuning: A Practical 8-Week Plan to Master ML Model Training
+
+If you've ever looked at those ML workflow diagrams—**Idea → Data → Model → Train → Evaluate → Deploy**—and wondered how to actually _do_ it, this post is for you.
+
+I spent time researching the most practical path from "I know Python" to "I just fine-tuned a 7B parameter model on my consumer GPU." This plan distills that into a week-by-week progression you can actually follow.
+
+---
+
+## Why This Plan Works
+
+Most ML courses teach theory first, code second. This plan does the opposite—you'll have a working model **in your first session**. Then we layer on complexity:
+
+1. **Week 1-2:** Get comfortable with the tools, see results fast
+2. **Week 3-4:** Learn efficient training (LoRA, custom datasets)
+3. **Week 5-6:** Train larger models with limited hardware (QLoRA)
+4. **Week 7-8:** Build something you can showcase
+
+The goal isn't to become a researcher. It's to become someone who can _actually train models_ when a use case appears at work.
+
+---
+
+## Phase 1: Foundation (Week 1-2)
+
+### Goal: Get comfortable with the Hugging Face ecosystem
+
+Before writing code, let's see the entire workflow work once.
+
+### Exercise 1.1: Zero-to-Deployment (No-Code)
+
+**The Task:** Create a sentiment analysis model using Hugging Face AutoTrain—no coding required.
+
+**Steps:**
+1. Go to [huggingface.co/autotrain](https://huggingface.co/autotrain)
+2. Create a new project
+3. Upload a small dataset (search HF Datasets for "sentiment", pick something with &lt;10k samples)
+4. Select `distilbert-base-uncased` as your base model
+5. Train for 3-5 epochs
+6. Deploy automatically to a Hugging Face Space with Gradio
+
+**What You'll Learn:** The full pipeline exists and works. The rest is just doing this with code.
+
+**Your Deliverable:** A shareable Space URL you can send to anyone.
+
+---
+
+### Exercise 1.2: First Python Fine-tuning
+
+**The Task:** Replicate Exercise 1.1 in Python.
+
+**The Code (Minimal Version):**
+
+```python
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, TrainingArguments, Trainer
+from datasets import load_dataset
+
+# Load just 1000 samples for speed
+dataset = load_dataset("imdb", split="train[:1000]")
+
+# Setup model and tokenizer
+model_name = "distilbert-base-uncased"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+
+# Tokenize
+def tokenize(examples):
+    return tokenizer(examples["text"], truncation=True, padding=True)
+
+dataset = dataset.map(tokenize, batched=True)
+
+# Training config
+args = TrainingArguments(
+    output_dir="./output",
+    num_train_epochs=1,
+    per_device_train_batch_size=8,
+)
+
+# Train
+trainer = Trainer(model=model, args=args, train_dataset=dataset)
+trainer.train()
+```
+
+**Don't Worry About:** Getting perfect accuracy. Just get it to complete without errors.
+
+**Key Insight:** This same pattern works for almost any classification task—just change the dataset.
+
+---
+
+## Phase 2: Core Skills (Week 3-4)
+
+### Goal: Master efficient fine-tuning and evaluation
+
+Now that you've trained a model, let's train _efficiently_. Full fine-tuning is expensive. Modern ML uses techniques that train only a tiny fraction of parameters.
+
+---
+
+### Exercise 2.1: PEFT and LoRA
+
+**The Task:** Fine-tune a larger model using LoRA (Low-Rank Adaptation).
+
+**Why This Matters:** Instead of training 100% of a 3B parameter model (~12GB of gradients), LoRA trains maybe 1% of parameters (~100MB). Same results, fraction of the cost.
+
+**The Code:**
+
+```python
+from peft import LoraConfig, get_peft_model
+
+# Configure LoRA
+lora_config = LoraConfig(
+    r=16,  # rank—keep this small
+    lora_alpha=32,
+    target_modules=["q_proj", "v_proj"],  # key attention layers
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CAUSAL_LM"
+)
+
+# Apply to your model
+model = get_peft_model(model, lora_config)
+
+# Check how little we're actually training
+model.print_trainable_parameters()  # "1.2% of parameters trainable"
+```
+
+**Try This:** Fine-tune `microsoft/phi-2` (2.7B params) on a simple instruction-following task. You can do this on a free Google Colab GPU.
+
+---
+
+### Exercise 2.2: Custom Dataset Preparation
+
+**The Task:** Train on _your_ data, not a benchmark.
+
+**Ideas to Explore:**
+- Customer support ticket classification
+- Bug report severity prediction  
+- Code comment sentiment
+- Vietnamese text classification
+
+**The Process:**
+1. Build a CSV with `text` and `label` columns
+2. Upload to HF Datasets Hub or load locally
+3. Fine-tune your model
+4. Compare accuracy against a baseline (zero-shot classification)
+
+**This Is Where It Gets Real:** Most work applications need this step. Benchmarks are for papers—your data is for production.
+
+---
+
+### Exercise 2.3: Evaluation & Metrics
+
+**The Task:** Stop guessing if your model is good.
+
+**Learn These:**
+- **Precision/Recall/F1** — for classification
+- **Perplexity** — for language models
+- **BLEU/ROUGE** — for text generation
+
+**The Setup:** Add validation metrics to your training and log them. Use Weights & Biases or TensorBoard.
+
+---
+
+## Phase 3: Advanced Techniques (Week 5-6)
+
+### Goal: Production-ready training with real hardware constraints
+
+Now you know the basics. Let's scale up.
+
+---
+
+### Exercise 3.1: Multi-GPU with Accelerate
+
+**The Task:** Train on 2+ GPUs or use gradient accumulation.
+
+**The Secret:** You don't need multiple GPUs to learn this. Use Accelerate's `gradient_accumulation_steps` to simulate larger batch sizes on single GPU.
+
+```bash
+# Configure once
+accelerate config
+
+# Launch with Accelerate
+accelerate launch train.py
+```
+
+**Why It Matters:** When you _do_ get access to multi-GPU machines, you'll already know the workflow.
+
+---
+
+### Exercise 3.2: QLoRA — Training 7B+ Models on Consumer GPUs
+
+**The Task:** Fine-tune a 7B parameter model on a 24GB GPU.
+
+**The Secret:** QLoRA = 4-bit quantization + LoRA. The model uses ~4GB VRAM for inference, ~8GB for training.
+
+**The Code:**
+
+```python
+from transformers import BitsAndBytesConfig
+from peft import prepare_model_for_kbit_training
+
+# 4-bit quantization
+bnb_config = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_quant_type="nf4",
+    bnb_4bit_compute_dtype=torch.float16
+)
+
+model = AutoModelForCausalLM.from_pretrained(
+    "mistralai/Mistral-7B-v0.1",
+    quantization_config=bnb_config,
+    device_map="auto"  # Automatically splits across available memory
+)
+
+model = prepare_model_for_kbit_training(model)
+# Then apply LoRA as before...
+```
+
+**Your Mindset Shift:** _This is how people actually train large models._ Not in data centers. On rented consumer GPUs with clever quantization.
+
+---
+
+### Exercise 3.3: Instruction Fine-tuning
+
+**The Task:** Convert a base model into a chat/instruction-following model.
+
+**The Dataset:** Try `timdettmers/openassistant-guanaco` or `databricks/databricks-dolly-15k`
+
+**The Format:** ChatML / Alpaca format (prompt + completion pairs)
+
+**What You Get:** A model that can actually respond to instructions, not just complete text.
+
+---
+
+## Phase 4: The Project (Week 7-8)
+
+### Goal: Something you can put on your resume
+
+Pick one of these:
+
+1. **Code Assistant** — Fine-tune on your company's code style
+2. **Support Ticket Classifier** — Auto-route by category/urgency
+3. **Vietnamese NLP Tool** — Sentiment analysis or QA in Vietnamese
+4. **Meeting Summarizer** — Convert transcripts to action items
+5. **Technical Documentation QA** — Answer questions about your company's docs
+
+### Project Requirements Checklist:
+
+<table>
+<thead>
+<tr><th>Item</th><th>Why It Matters</th></tr>
+</thead>
+<tbody>
+<tr><td>✓ Custom dataset</td><td>Shows you can do more than download</td></tr>
+<tr><td>✓ Proper preprocessing</td><td>Real-world data is messy</td></tr>
+<tr><td>✓ PEFT (LoRA/QLoRA)</td><td>Modern, efficient training</td></tr>
+<tr><td>✓ Training logs/metrics</td><td>Shows rigor</td></tr>
+<tr><td>✓ Gradio demo on HF Spaces</td><td>Anyone can try it</td></tr>
+<tr><td>✓ Simple API endpoint</td><td>Shows production thinking</td></tr>
+</tbody>
+</table>
+
+---
+
+## Hardware Reality Check
+
+Here's what you actually need:
+
+<table>
+<thead>
+<tr><th>Model Size</th><th>Method</th><th>VRAM Required</th></tr>
+</thead>
+<tbody>
+<tr><td>&lt;1B</td><td>Full fine-tune</td><td>8GB</td></tr>
+<tr><td>3B-7B</td><td>LoRA</td><td>8-16GB</td></tr>
+<tr><td>7B-13B</td><td>QLoRA</td><td>12-20GB</td></tr>
+<tr><td>13B+</td><td>QLoRA / DeepSpeed</td><td>24GB+</td></tr>
+</tbody>
+</table>
+
+**Free Options:** Google Colab, Kaggle (30 hours GPU/week)
+
+**Paid Options:** RunPod, AutoDL, Lambda Labs (~$0.50-$2/hour for A100s)
+
+---
+
+## Quick Start Checklist
+
+Before you begin:
+
+- [ ] Create [Hugging Face account](https://huggingface.co) + generate access token
+- [ ] Install dependencies: `pip install transformers datasets accelerate peft bitsandbytes`
+- [ ] Test GPU: `python -c "import torch; print(torch.cuda.is_available())"`
+- [ ] Complete Exercise 1.1 (no-code baseline)
+- [ ] Share your first Space URL (even if it's not perfect)
+
+---
+
+## Resources That Actually Help
+
+<table>
+<thead>
+<tr><th>Resource</th><th>What It's For</th></tr>
+</thead>
+<tbody>
+<tr><td><a href="https://huggingface.co/learn/nlp-course">HF NLP Course</a></td><td>Chapters 1-7 cover the fundamentals</td></tr>
+<tr><td><a href="https://huggingface.co/docs/peft">PEFT Docs</a></td><td>LoRA/QLoRA reference</td></tr>
+<tr><td><a href="https://github.com/huggingface/peft/tree/main/examples">PEFT Examples</a></td><td>Copy-paste starting points</td></tr>
+<tr><td><a href="https://medium.com/@martin-thissen/a-beginners-guide-to-llm-fine-tuning-qlora-techniques-and-llm2chemical-biology-finetuning-0ce5d4e85c1">Beginner's Guide to QLoRA</a></td><td>Practical walkthrough</td></tr>
+</tbody>
+</table>
+
+---
+
+## Final Thoughts
+
+Machine learning training isn't magic. It's a workflow, and like any workflow, you learn it by doing it.
+
+Don't spend weeks on theory before touching code. Don't wait until you "understand transformers completely." Just start with Exercise 1.1, get something working, and build from there.
+
+The gap between "I've read about fine-tuning" and "I've fine-tuned a model" is about 4 hours of hands-on work. Close that gap this week.
+
+---
+
+**Questions or feedback?** Find me on [X/Twitter](https://twitter.com/khoaln) or drop a comment below.
